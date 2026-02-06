@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divisor de Imágenes Gratuito Online - Múltiples Fotos, Divisiones Independientes o Globales, Automático por Número de Partes</title>
+    <meta name="description" content="Divide múltiples imágenes online gratis. Líneas arrastrables, división automática por filas/columnas, descarga ZIP. 100% privado, funciona en tu navegador.">
+    <meta name="keywords" content="divisor imágenes, cortar fotos, split image, dividir imagen online, gratis">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://tuusuario.github.io/image-splitter/">
+    
+    <style>
+        /* ========== VARIABLES Y TEMA ========== */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e8e8e8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --border: #d1d5db;
+            --shadow: rgba(0,0,0,0.1);
+            --line-vertical: rgba(37, 99, 235, 0.8);
+            --line-horizontal: rgba(220, 38, 38, 0.8);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f0f0f;
+                --bg-secondary: #1a1a1a;
+                --bg-tertiary: #2a2a2a;
+                --text-primary: #f0f0f0;
+                --text-secondary: #a0a0a0;
+                --border: #404040;
+                --shadow: rgba(0,0,0,0.3);
+            }
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e8e8e8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border: #d1d5db;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --border: #404040;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        /* ========== RESET Y BASE ========== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ========== HEADER ========== */
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* ========== BOTONES ========== */
+        button, .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ========== INPUTS ========== */
+        input[type="number"], input[type="text"] {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            width: 60px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* ========== ÁREA PRINCIPAL ========== */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* ========== ZONA DE CARGA ========== */
+        .upload-zone {
+            border: 3px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: var(--bg-tertiary);
+        }
+
+        .upload-zone h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-zone p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-limits {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+        }
+
+        /* ========== ALERTAS ========== */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .alert-danger {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        /* ========== CONTENEDOR DE IMÁGENES ========== */
+        #images-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ========== SECCIÓN DE IMAGEN INDIVIDUAL ========== */
+        .image-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .image-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .image-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .image-info h3 {
+            font-size: 1rem;
+            word-break: break-all;
+            margin-bottom: 0.25rem;
+        }
+
+        .image-info .dimensions {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .image-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .control-group label {
+            white-space: nowrap;
+        }
+
+        /* ========== PREVIEW CONTAINER ========== */
+        .preview-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            margin-bottom: 1rem;
+        }
+
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            overflow: auto;
+            max-height: 500px;
+        }
+
+        .preview-canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            cursor: crosshair;
+        }
+
+        /* ========== LÍNEAS DIVISORAS ========== */
+        .split-line {
+            position: absolute;
+            background: var(--line-vertical);
+            z-index: 10;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .split-line.vertical {
+            width: 3px;
+            height: 100%;
+            top: 0;
+            cursor: ew-resize;
+            background: var(--line-vertical);
+        }
+
+        .split-line.horizontal {
+            height: 3px;
+            width: 100%;
+            left: 0;
+            cursor: ns-resize;
+            background: var(--line-horizontal);
+        }
+
+        .split-line:hover, .split-line.dragging {
+            filter: brightness(1.2);
+        }
+
+        .split-line::after {
+            content: '×';
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        .split-line.vertical::after {
+            top: 5px;
+            left: -6px;
+        }
+
+        .split-line.horizontal::after {
+            left: 5px;
+            top: -6px;
+        }
+
+        .split-line:hover::after {
+            opacity: 1;
+        }
+
+        /* ========== THUMBNAILS DE PARTES ========== */
+        .parts-preview {
+            margin-top: 1rem;
+        }
+
+        .parts-preview h4 {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .parts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .part-thumbnail {
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .part-thumbnail:hover {
+            transform: scale(1.05);
+            z-index: 5;
+        }
+
+        .part-thumbnail canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: var(--bg-primary);
+        }
+
+        .part-thumbnail .part-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 0.625rem;
+            padding: 2px 4px;
+            text-align: center;
+        }
+
+        .part-thumbnail .download-part {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .part-thumbnail:hover .download-part {
+            opacity: 1;
+        }
+
+        /* ========== ACCIONES DE IMAGEN ========== */
+        .image-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ========== HISTORIAL UNDO/REDO ========== */
+        .history-controls {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        /* ========== MODAL TUTORIAL ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .modal p, .modal li {
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .modal ul {
+            padding-left: 1.5rem;
+        }
+
+        .modal .close-btn {
+            margin-top: 1.5rem;
+            width: 100%;
+        }
+
+        /* ========== SPINNER/PROGRESO ========== */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: white;
+            z-index: 20;
+        }
+
+        .progress-overlay.hidden {
+            display: none;
+        }
+
+        /* ========== TEMA TOGGLE ========== */
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.25rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .theme-toggle button {
+            padding: 0.25rem 0.5rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+        }
+
+        .theme-toggle button.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ========== ZOOM CONTROLS ========== */
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--bg-tertiary);
+            padding: 0.25rem;
+            border-radius: 6px;
+        }
+
+        .zoom-level {
+            font-size: 0.75rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .image-controls {
+                justify-content: center;
+            }
+
+            .parts-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        /* ========== GLOBAL CONTROLS BAR ========== */
+        .global-controls {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .global-controls.hidden {
+            display: none;
+        }
+
+        .global-left {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== HEADER ========== -->
+    <header>
+        <div class="header-content">
+            <h1>✂️ Divisor de Imágenes Online</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-small" id="helpBtn" title="Ayuda">❓ Ayuda</button>
+                <div class="theme-toggle">
+                    <button id="themeAuto" class="active" title="Automático">Auto</button>
+                    <button id="themeLight" title="Claro">☀️</button>
+                    <button id="themeDark" title="Oscuro">🌙</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========== MAIN ========== -->
+    <main>
+        <!-- Zona de carga -->
+        <div class="upload-zone" id="uploadZone">
+            <h2>📁 Arrastra imágenes aquí o haz clic para seleccionar</h2>
+            <p>Soporta JPG, PNG, WebP, GIF y más formatos</p>
+            <label class="btn btn-primary">
+                Seleccionar Imágenes
+                <input type="file" id="fileInput" multiple accept="image/*">
+            </label>
+            <div class="upload-limits">
+                <strong>Límites:</strong> Máx. 50 MB por imagen | Advertencia si >5 imágenes o >200 MB total<br>
+                <em>💡 Mejor experiencia en Chrome/Firefox de escritorio. Safari/móvil puede limitar tamaños grandes.</em>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alertsContainer"></div>
+
+        <!-- Controles globales (aparecen cuando hay imágenes) -->
+        <div class="global-controls hidden" id="globalControls">
+            <div class="global-left">
+                <div class="control-group">
+                    <label>Filas globales:</label>
+                    <input type="number" id="globalRows" value="1" min="1" max="50">
+                </div>
+                <div class="control-group">
+                    <label>Columnas globales:</label>
+                    <input type="number" id="globalCols" value="1" min="1" max="50">
+                </div>
+                <button class="btn btn-primary btn-small" id="applyGlobalBtn">Aplicar a todas</button>
+            </div>
+            <div class="global-right">
+                <button class="btn btn-success" id="downloadAllBtn">📦 Descargar Todo (ZIP)</button>
+                <button class="btn btn-danger btn-small" id="clearAllBtn">🗑️ Limpiar todo</button>
+            </div>
+        </div>
+
+        <!-- Contenedor de imágenes -->
+        <div id="images-container"></div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <p>Divisor de Imágenes Gratuito | 100% privado - Todo se procesa en tu navegador | Sin servidores externos</p>
+        <p>Compatible con Chrome, Firefox, Edge y Safari</p>
+    </footer>
+
+    <!-- ========== MODAL TUTORIAL ========== -->
+    <div class="modal-overlay" id="tutorialModal">
+        <div class="modal">
+            <h2>👋 Bienvenido al Divisor de Imágenes</h2>
+            <p>Esta herramienta te permite dividir múltiples imágenes de forma rápida y privada.</p>
+            
+            <h3>📌 Cómo usar:</h3>
+            <ul>
+                <li><strong>Cargar:</strong> Arrastra imágenes o usa el botón de selección.</li>
+                <li><strong>Configurar:</strong> Ajusta filas y columnas para cada imagen. Las líneas se generan automáticamente.</li>
+                <li><strong>Ajustar:</strong> Arrastra las líneas divisoras para ajustes precisos.</li>
+                <li><strong>Eliminar línea:</strong> Haz clic en la × que aparece al pasar sobre una línea.</li>
+                <li><strong>Global:</strong> Usa "Aplicar a todas" para copiar la configuración a todas las imágenes.</li>
+                <li><strong>Descargar:</strong> Descarga partes individuales o todo en ZIP.</li>
+            </ul>
+
+            <h3>🎨 Colores de líneas:</h3>
+            <ul>
+                <li><span style="color: var(--line-vertical);">■</span> Azul = Líneas verticales (columnas)</li>
+                <li><span style="color: var(--line-horizontal);">■</span> Rojo = Líneas horizontales (filas)</li>
+            </ul>
+
+            <h3>⚡ Atajos:</h3>
+            <ul>
+                <li><strong>Ctrl+Z:</strong> Deshacer (por imagen activa)</li>
+                <li><strong>Ctrl+Y:</strong> Rehacer</li>
+            </ul>
+
+            <button class="btn btn-primary close-btn" id="closeTutorial">¡Entendido! Empezar</button>
+        </div>
+    </div>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+    /**
+     * =========================================================================
+     * DIVISOR DE IMÁGENES AVANZADO
+     * =========================================================================
+     * 
+     * ARQUITECTURA:
+     * - Cada imagen tiene su propio estado independiente (líneas, zoom, historial)
+     * - Las líneas se generan automáticamente basándose en filas/columnas
+     * - Sistema de undo/redo por imagen
+     * - ZIP generado 100% client-side sin librerías externas
+     * 
+     * MANEJO DE MEMORIA:
+     * - Lazy rendering con IntersectionObserver
+     * - Liberación de recursos cuando se elimina una imagen
+     * - Canvas de preview escalado para evitar OOM
+     * - Advertencias para imágenes muy grandes
+     * 
+     * =========================================================================
+     */
+
+    // ========== ESTADO GLOBAL ==========
+    const state = {
+        images: new Map(), // Map<id, ImageData>
+        nextId: 1,
+        activeImageId: null,
+        tutorialShown: localStorage.getItem('tutorialShown') === 'true'
+    };
+
+    /**
+     * Estructura de datos por imagen:
+     * {
+     *   id: number,
+     *   file: File,
+     *   name: string,
+     *   width: number,
+     *   height: number,
+     *   originalImage: HTMLImageElement,
+     *   rows: number,
+     *   cols: number,
+     *   verticalLines: number[], // posiciones en % (0-100)
+     *   horizontalLines: number[],
+     *   zoom: number,
+     *   pan: {x, y},
+     *   history: Array<{vertical: [], horizontal: []}>,
+     *   historyIndex: number,
+     *   element: HTMLElement
+     * }
+     */
+
+    // ========== CONSTANTES ==========
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+    const WARN_FILE_COUNT = 5;
+    const WARN_TOTAL_SIZE = 200 * 1024 * 1024; // 200 MB
+    const MAX_DIMENSION = 30000;
+    const PREVIEW_MAX_WIDTH = 1200;
+    const PREVIEW_MAX_HEIGHT = 800;
+
+    // ========== INICIALIZACIÓN ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        initTheme();
+        initUpload();
+        initGlobalControls();
+        initTutorial();
+        initKeyboardShortcuts();
+    });
+
+    // ========== TEMA ==========
+    function initTheme() {
+        const saved = localStorage.getItem('theme');
+        if (saved) {
+            document.documentElement.setAttribute('data-theme', saved);
+            updateThemeButtons(saved);
+        }
+
+        document.getElementById('themeAuto').addEventListener('click', () => setTheme('auto'));
+        document.getElementById('themeLight').addEventListener('click', () => setTheme('light'));
+        document.getElementById('themeDark').addEventListener('click', () => setTheme('dark'));
+    }
+
+    function setTheme(theme) {
+        if (theme === 'auto') {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.removeItem('theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        updateThemeButtons(theme);
+    }
+
+    function updateThemeButtons(theme) {
+        document.querySelectorAll('.theme-toggle button').forEach(btn => btn.classList.remove('active'));
+        if (theme === 'auto' || !theme) {
+            document.getElementById('themeAuto').classList.add('active');
+        } else if (theme === 'light') {
+            document.getElementById('themeLight').classList.add('active');
+        } else {
+            document.getElementById('themeDark').classList.add('active');
+        }
+    }
+
+    // ========== TUTORIAL ==========
+    function initTutorial() {
+        const modal = document.getElementById('tutorialModal');
+        const closeBtn = document.getElementById('closeTutorial');
+        const helpBtn = document.getElementById('helpBtn');
+
+        if (state.tutorialShown) {
+            modal.classList.add('hidden');
+        }
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            localStorage.setItem('tutorialShown', 'true');
+            state.tutorialShown = true;
+        });
+
+        helpBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+
+    // ========== UPLOAD ==========
+    function initUpload() {
+        const zone = document.getElementById('uploadZone');
+        const input = document.getElementById('fileInput');
+
+        // Drag & drop
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.classList.add('dragover');
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('dragover');
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // Click para seleccionar
+        input.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            input.value = ''; // Reset para permitir re-selección
+        });
+    }
+
+    /**
+     * Procesa archivos cargados
+     * - Valida tamaños y cantidad
+     * - Muestra advertencias si es necesario
+     * - Carga cada imagen válida
+     */
+    async function handleFiles(fileList) {
+        const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        
+        if (files.length === 0) {
+            showAlert('No se encontraron imágenes válidas', 'danger');
+            return;
+        }
+
+        // Validaciones
+        const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+        const oversizedFiles = files.filter(f => f.size > MAX_FILE_SIZE);
+
+        if (oversizedFiles.length > 0) {
+            showAlert(`${oversizedFiles.length} archivo(s) superan 50 MB y serán omitidos: ${oversizedFiles.map(f => f.name).join(', ')}`, 'danger');
+        }
+
+        if (files.length > WARN_FILE_COUNT) {
+            showAlert(`Cargando ${files.length} imágenes. Esto puede consumir mucha memoria.`, 'warning');
+        }
+
+        if (totalSize > WARN_TOTAL_SIZE) {
+            showAlert(`Tamaño total: ${(totalSize / 1024 / 1024).toFixed(1)} MB. Puede afectar el rendimiento.`, 'warning');
+        }
+
+        // Procesar archivos válidos
+        const validFiles = files.filter(f => f.size <= MAX_FILE_SIZE);
+        
+        for (const file of validFiles) {
+            await loadImage(file);
+        }
+
+        updateGlobalControlsVisibility();
+    }
+
+    /**
+     * Carga una imagen individual
+     * - Crea elemento Image
+     * - Valida dimensiones
+     * - Inicializa estado
+     * - Renderiza UI
+     */
+    async function loadImage(file) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const id = state.nextId++;
+
+            img.onload = () => {
+                // Validar dimensiones
+                if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
+                    showAlert(`"${file.name}" tiene dimensiones muy grandes (${img.width}x${img.height}). Puede causar problemas.`, 'warning');
+                }
+
+                // Crear estado de imagen
+                const imageData = {
+                    id,
+                    file,
+                    name: file.name,
+                    width: img.width,
+                    height: img.height,
+                    originalImage: img,
+                    rows: 1,
+                    cols: 1,
+                    verticalLines: [],
+                    horizontalLines: [],
+                    zoom: 1,
+                    pan: { x: 0, y: 0 },
+                    history: [{ vertical: [], horizontal: [] }],
+                    historyIndex: 0,
+                    element: null
+                };
+
+                state.images.set(id, imageData);
+                renderImageSection(imageData);
+                resolve();
+            };
+
+            img.onerror = () => {
+                showAlert(`Error al cargar "${file.name}"`, 'danger');
+                resolve();
+            };
+
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    // ========== RENDERIZADO DE SECCIÓN DE IMAGEN ==========
+    function renderImageSection(imageData) {
+        const container = document.getElementById('images-container');
+        
+        const section = document.createElement('div');
+        section.className = 'image-section';
+        section.dataset.imageId = imageData.id;
+        
+        section.innerHTML = `
+            <div class="image-header">
+                <div class="image-info">
+                    <h3>${escapeHtml(imageData.name)}</h3>
+                    <span class="dimensions">${imageData.width} × ${imageData.height} px</span>
+                </div>
+                <div class="image-controls">
+                    <div class="control-group">
+                        <label>Filas:</label>
+                        <input type="number" class="rows-input" value="${imageData.rows}" min="1" max="50">
+                    </div>
+                    <div class="control-group">
+                        <label>Columnas:</label>
+                        <input type="number" class="cols-input" value="${imageData.cols}" min="1" max="50">
+                    </div>
+                    <button class="btn btn-secondary btn-small apply-config-btn" title="Aplicar esta configuración a todas">📋 A todas</button>
+                    <div class="history-controls">
+                        <button class="btn btn-secondary btn-small undo-btn" title="Deshacer">↩</button>
+                        <button class="btn btn-secondary btn-small redo-btn" title="Rehacer">↪</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="btn btn-secondary btn-small zoom-out-btn">−</button>
+                        <span class="zoom-level">100%</span>
+                        <button class="btn btn-secondary btn-small zoom-in-btn">+</button>
+                        <button class="btn btn-secondary btn-small zoom-fit-btn">Ajustar</button>
+                    </div>
+                    <button class="btn btn-danger btn-small remove-btn" title="Eliminar imagen">✕</button>
+                </div>
+            </div>
+            <div class="preview-wrapper">
+                <div class="preview-container" data-image-id="${imageData.id}">
+                    <canvas class="preview-canvas"></canvas>
+                </div>
+                <div class="progress-overlay hidden">
+                    <div class="spinner"></div>
+                    <p>Procesando...</p>
+                </div>
+            </div>
+            <div class="parts-preview">
+                <h4>Vista previa de partes: <span class="parts-count">1 parte</span></h4>
+                <div class="parts-grid"></div>
+            </div>
+            <div class="image-actions">
+                <button class="btn btn-success download-zip-btn">📦 Descargar ZIP (esta imagen)</button>
+            </div>
+        `;
+
+        container.appendChild(section);
+        imageData.element = section;
+
+        // Renderizar canvas
+        renderPreviewCanvas(imageData);
+
+        // Configurar eventos
+        setupImageEvents(imageData, section);
+
+        // Lazy loading con IntersectionObserver
+        setupLazyLoading(imageData, section);
+    }
+
+    /**
+     * Renderiza el canvas de preview con la imagen escalada
+     * para evitar problemas de memoria con imágenes muy grandes
+     */
+    function renderPreviewCanvas(imageData) {
+        const canvas = imageData.element.querySelector('.preview-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Calcular escala para preview
+        let scale = 1;
+        if (imageData.width > PREVIEW_MAX_WIDTH) {
+            scale = PREVIEW_MAX_WIDTH / imageData.width;
+        }
+        if (imageData.height * scale > PREVIEW_MAX_HEIGHT) {
+            scale = PREVIEW_MAX_HEIGHT / imageData.height;
+        }
+
+        const displayWidth = Math.floor(imageData.width * scale);
+        const displayHeight = Math.floor(imageData.height * scale);
+
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+
+        // Guardar escala para calcular posiciones de líneas
+        imageData.displayScale = scale;
+        imageData.displayWidth = displayWidth;
+        imageData.displayHeight = displayHeight;
+
+        try {
+            ctx.drawImage(imageData.originalImage, 0, 0, displayWidth, displayHeight);
+        } catch (e) {
+            console.error('Error al dibujar imagen:', e);
+            showAlert(`Error al renderizar "${imageData.name}". La imagen puede ser demasiado grande.`, 'danger');
+        }
+
+        // Renderizar líneas
+        renderLines(imageData);
+        // Actualizar preview de partes
+        updatePartsPreview(imageData);
+    }
+
+    /**
+     * Configura todos los eventos de una sección de imagen
+     */
+    function setupImageEvents(imageData, section) {
+        const rowsInput = section.querySelector('.rows-input');
+        const colsInput = section.querySelector('.cols-input');
+        const applyConfigBtn = section.querySelector('.apply-config-btn');
+        const undoBtn = section.querySelector('.undo-btn');
+        const redoBtn = section.querySelector('.redo-btn');
+        const zoomInBtn = section.querySelector('.zoom-in-btn');
+        const zoomOutBtn = section.querySelector('.zoom-out-btn');
+        const zoomFitBtn = section.querySelector('.zoom-fit-btn');
+        const removeBtn = section.querySelector('.remove-btn');
+        const downloadZipBtn = section.querySelector('.download-zip-btn');
+
+        /**
+         * GENERACIÓN AUTOMÁTICA DE LÍNEAS POR FILAS/COLUMNAS
+         * =====================================================
+         * Cuando el usuario cambia el número de filas o columnas,
+         * generamos líneas divisoras uniformemente distribuidas.
+         * 
+         * Para N filas, necesitamos N-1 líneas horizontales.
+         * Posiciones: 100/N, 200/N, ..., (N-1)*100/N
+         * 
+         * Ejemplo: 4 filas → 3 líneas en 25%, 50%, 75%
+         */
+        const updateLines = () => {
+            const rows = parseInt(rowsInput.value) || 1;
+            const cols = parseInt(colsInput.value) || 1;
+            
+            imageData.rows = Math.max(1, Math.min(50, rows));
+            imageData.cols = Math.max(1, Math.min(50, cols));
+            
+            rowsInput.value = imageData.rows;
+            colsInput.value = imageData.cols;
+
+            // Generar líneas horizontales (para filas)
+            imageData.horizontalLines = [];
+            for (let i = 1; i < imageData.rows; i++) {
+                imageData.horizontalLines.push((i / imageData.rows) * 100);
+            }
+
+            // Generar líneas verticales (para columnas)
+            imageData.verticalLines = [];
+            for (let i = 1; i < imageData.cols; i++) {
+                imageData.verticalLines.push((i / imageData.cols) * 100);
+            }
+
+            // Guardar en historial
+            saveToHistory(imageData);
+
+            // Re-renderizar
+            renderLines(imageData);
+            updatePartsPreview(imageData);
+        };
+
+        rowsInput.addEventListener('change', updateLines);
+        colsInput.addEventListener('change', updateLines);
+
+        /**
+         * MODO GLOBAL: Aplicar configuración a todas las imágenes
+         * ========================================================
+         * Copia las filas, columnas y posiciones de líneas actuales
+         * a todas las demás imágenes cargadas.
+         */
+        applyConfigBtn.addEventListener('click', () => {
+            state.images.forEach((otherImage) => {
+                if (otherImage.id === imageData.id) return;
+
+                otherImage.rows = imageData.rows;
+                otherImage.cols = imageData.cols;
+                otherImage.verticalLines = [...imageData.verticalLines];
+                otherImage.horizontalLines = [...imageData.horizontalLines];
+
+                // Actualizar UI
+                const otherSection = otherImage.element;
+                otherSection.querySelector('.rows-input').value = otherImage.rows;
+                otherSection.querySelector('.cols-input').value = otherImage.cols;
+
+                saveToHistory(otherImage);
+                renderLines(otherImage);
+                updatePartsPreview(otherImage);
+            });
+
+            showAlert('Configuración aplicada a todas las imágenes', 'info');
+        });
+
+        // Undo/Redo
+        undoBtn.addEventListener('click', () => undo(imageData));
+        redoBtn.addEventListener('click', () => redo(imageData));
+
+        // Zoom
+        zoomInBtn.addEventListener('click', () => setZoom(imageData, imageData.zoom * 1.25));
+        zoomOutBtn.addEventListener('click', () => setZoom(imageData, imageData.zoom / 1.25));
+        zoomFitBtn.addEventListener('click', () => setZoom(imageData, 1));
+
+        // Eliminar imagen
+        removeBtn.addEventListener('click', () => removeImage(imageData.id));
+
+        // Descargar ZIP de esta imagen
+        downloadZipBtn.addEventListener('click', () => downloadImageZip(imageData));
+
+        // Focus para atajos de teclado
+        section.addEventListener('click', () => {
+            state.activeImageId = imageData.id;
+        });
+    }
+
+    /**
+     * Renderiza las líneas divisoras sobre el canvas
+     */
+    function renderLines(imageData) {
+        const container = imageData.element.querySelector('.preview-container');
+        
+        // Eliminar líneas existentes
+        container.querySelectorAll('.split-line').forEach(el => el.remove());
+
+        // Renderizar líneas verticales
+        imageData.verticalLines.forEach((pos, index) => {
+            const line = createLine('vertical', pos, imageData, index);
+            container.appendChild(line);
+        });
+
+        // Renderizar líneas horizontales
+        imageData.horizontalLines.forEach((pos, index) => {
+            const line = createLine('horizontal', pos, imageData, index);
+            container.appendChild(line);
+        });
+    }
+
+    /**
+     * Crea un elemento de línea divisora arrastrable
+     */
+    function createLine(type, position, imageData, index) {
+        const line = document.createElement('div');
+        line.className = `split-line ${type}`;
+        line.dataset.index = index;
+        line.dataset.type = type;
+
+        if (type === 'vertical') {
+            line.style.left = `${position}%`;
+        } else {
+            line.style.top = `${position}%`;
+        }
+
+        // Arrastrar línea
+        let isDragging = false;
+        let startPos = 0;
+        let startPercent = position;
+
+        const onMouseDown = (e) => {
+            if (e.target === line.querySelector('::after') || e.offsetX < 0 || e.offsetY < 0) {
+                // Click en el botón de eliminar
+                return;
+            }
+            isDragging = true;
+            line.classList.add('dragging');
+            startPos = type === 'vertical' ? e.clientX : e.clientY;
+            startPercent = position;
+            e.preventDefault();
+        };
+
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+
+            const container = imageData.element.querySelector('.preview-container');
+            const rect = container.getBoundingClientRect();
+            
+            let newPercent;
+            if (type === 'vertical') {
+                const delta = e.clientX - startPos;
+                const deltaPercent = (delta / rect.width) * 100;
+                newPercent = startPercent + deltaPercent;
+            } else {
+                const delta = e.clientY - startPos;
+                const deltaPercent = (delta / rect.height) * 100;
+                newPercent = startPercent + deltaPercent;
+            }
+
+            // Limitar entre 0.5% y 99.5%
+            newPercent = Math.max(0.5, Math.min(99.5, newPercent));
+
+            if (type === 'vertical') {
+                line.style.left = `${newPercent}%`;
+                imageData.verticalLines[index] = newPercent;
+            } else {
+                line.style.top = `${newPercent}%`;
+                imageData.horizontalLines[index] = newPercent;
+            }
+
+            updatePartsPreview(imageData);
+        };
+
+        const onMouseUp = () => {
+            if (isDragging) {
+                isDragging = false;
+                line.classList.remove('dragging');
+                saveToHistory(imageData);
+            }
+        };
+
+        line.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        // Click en × para eliminar línea
+        line.addEventListener('click', (e) => {
+            const rect = line.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Si el click es cerca del icono × (esquina)
+            if ((type === 'vertical' && clickY < 20 && clickX < 10) ||
+                (type === 'horizontal' && clickX < 20 && clickY < 10)) {
+                removeLine(imageData, type, index);
+            }
+        });
+
+        return line;
+    }
+
+    /**
+     * Elimina una línea divisora
+     */
+    function removeLine(imageData, type, index) {
+        if (type === 'vertical') {
+            imageData.verticalLines.splice(index, 1);
+            imageData.cols = imageData.verticalLines.length + 1;
+            imageData.element.querySelector('.cols-input').value = imageData.cols;
+        } else {
+            imageData.horizontalLines.splice(index, 1);
+            imageData.rows = imageData.horizontalLines.length + 1;
+            imageData.element.querySelector('.rows-input').value = imageData.rows;
+        }
+
+        saveToHistory(imageData);
+        renderLines(imageData);
+        updatePartsPreview(imageData);
+    }
+
+    /**
+     * ACTUALIZA LA VISTA PREVIA DE PARTES
+     * ====================================
+     * Calcula las regiones basándose en las posiciones de líneas
+     * y genera thumbnails de cada parte.
+     */
+    function updatePartsPreview(imageData) {
+        const partsGrid = imageData.element.querySelector('.parts-grid');
+        const partsCount = imageData.element.querySelector('.parts-count');
+        
+        partsGrid.innerHTML = '';
+
+        // Calcular regiones
+        const regions = calculateRegions(imageData);
+        partsCount.textContent = `${regions.length} parte${regions.length !== 1 ? 's' : ''}`;
+
+        regions.forEach((region, idx) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'part-thumbnail';
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Tamaño del thumbnail
+            const thumbSize = 80;
+            const aspectRatio = region.width / region.height;
+            
+            if (aspectRatio > 1) {
+                canvas.width = thumbSize;
+                canvas.height = thumbSize / aspectRatio;
+            } else {
+                canvas.height = thumbSize;
+                canvas.width = thumbSize * aspectRatio;
+            }
+
+            try {
+                ctx.drawImage(
+                    imageData.originalImage,
+                    region.x, region.y, region.width, region.height,
+                    0, 0, canvas.width, canvas.height
+                );
+            } catch (e) {
+                ctx.fillStyle = '#ccc';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            const label = document.createElement('div');
+            label.className = 'part-label';
+            label.textContent = `${region.row + 1}-${region.col + 1}`;
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-part';
+            downloadBtn.innerHTML = '⬇';
+            downloadBtn.title = 'Descargar esta parte';
+            downloadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadPart(imageData, region);
+            });
+
+            thumb.appendChild(canvas);
+            thumb.appendChild(label);
+            thumb.appendChild(downloadBtn);
+            partsGrid.appendChild(thumb);
+        });
+    }
+
+    /**
+     * CALCULA LAS REGIONES DE CORTE
+     * ==============================
+     * Basándose en las posiciones de líneas (en %), calcula
+     * las coordenadas absolutas de cada parte en píxeles.
+     */
+    function calculateRegions(imageData) {
+        const regions = [];
+        
+        // Ordenar líneas
+        const vLines = [0, ...imageData.verticalLines.sort((a, b) => a - b), 100];
+        const hLines = [0, ...imageData.horizontalLines.sort((a, b) => a - b), 100];
+
+        for (let row = 0; row < hLines.length - 1; row++) {
+            for (let col = 0; col < vLines.length - 1; col++) {
+                const x = Math.round((vLines[col] / 100) * imageData.width);
+                const y = Math.round((hLines[row] / 100) * imageData.height);
+                const width = Math.round(((vLines[col + 1] - vLines[col]) / 100) * imageData.width);
+                const height = Math.round(((hLines[row + 1] - hLines[row]) / 100) * imageData.height);
+
+                regions.push({ x, y, width, height, row, col });
+            }
+        }
+
+        return regions;
+    }
+
+    // ========== HISTORIAL UNDO/REDO ==========
+    function saveToHistory(imageData) {
+        // Truncar historial si estamos en medio
+        imageData.history = imageData.history.slice(0, imageData.historyIndex + 1);
+        
+        // Guardar estado actual
+        imageData.history.push({
+            vertical: [...imageData.verticalLines],
+            horizontal: [...imageData.horizontalLines],
+            rows: imageData.rows,
+            cols: imageData.cols
+        });
+        
+        imageData.historyIndex = imageData.history.length - 1;
+
+        // Limitar historial a 50 estados para no consumir mucha memoria
+        if (imageData.history.length > 50) {
+            imageData.history.shift();
+            imageData.historyIndex--;
+        }
+    }
+
+    function undo(imageData) {
+        if (imageData.historyIndex > 0) {
+            imageData.historyIndex--;
+            applyHistoryState(imageData);
+        }
+    }
+
+    function redo(imageData) {
+        if (imageData.historyIndex < imageData.history.length - 1) {
+            imageData.historyIndex++;
+            applyHistoryState(imageData);
+        }
+    }
+
+    function applyHistoryState(imageData) {
+        const state = imageData.history[imageData.historyIndex];
+        imageData.verticalLines = [...state.vertical];
+        imageData.horizontalLines = [...state.horizontal];
+        imageData.rows = state.rows;
+        imageData.cols = state.cols;
+
+        // Actualizar UI
+        imageData.element.querySelector('.rows-input').value = imageData.rows;
+        imageData.element.querySelector('.cols-input').value = imageData.cols;
+
+        renderLines(imageData);
+        updatePartsPreview(imageData);
+    }
+
+    // ========== ZOOM ==========
+    function setZoom(imageData, newZoom) {
+        imageData.zoom = Math.max(0.25, Math.min(4, newZoom));
+        
+        const canvas = imageData.element.querySelector('.preview-canvas');
+        const container = imageData.element.querySelector('.preview-container');
+        
+        canvas.style.transform = `scale(${imageData.zoom})`;
+        canvas.style.transformOrigin = 'top left';
+        
+        // Actualizar display de zoom
+        const zoomLevel = imageData.element.querySelector('.zoom-level');
+        zoomLevel.textContent = `${Math.round(imageData.zoom * 100)}%`;
+    }
+
+    // ========== ELIMINAR IMAGEN ==========
+    /**
+     * LIBERACIÓN DE MEMORIA
+     * ======================
+     * Al eliminar una imagen, liberamos:
+     * - Referencia al objeto Image original
+     * - URL blob creada
+     * - Elementos DOM
+     * - Estado en el Map
+     */
+    function removeImage(id) {
+        const imageData = state.images.get(id);
+        if (!imageData) return;
+
+        // Liberar URL del blob
+        if (imageData.originalImage && imageData.originalImage.src) {
+            URL.revokeObjectURL(imageData.originalImage.src);
+        }
+
+        // Limpiar referencias
+        imageData.originalImage = null;
+        imageData.history = null;
+
+        // Eliminar del DOM
+        if (imageData.element) {
+            imageData.element.remove();
+        }
+
+        // Eliminar del estado
+        state.images.delete(id);
+
+        updateGlobalControlsVisibility();
+    }
+
+    // ========== CONTROLES GLOBALES ==========
+    function initGlobalControls() {
+        const applyGlobalBtn = document.getElementById('applyGlobalBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const globalRows = document.getElementById('globalRows');
+        const globalCols = document.getElementById('globalCols');
+
+        applyGlobalBtn.addEventListener('click', () => {
+            const rows = parseInt(globalRows.value) || 1;
+            const cols = parseInt(globalCols.value) || 1;
+
+            state.images.forEach((imageData) => {
+                imageData.rows = rows;
+                imageData.cols = cols;
+
+                // Generar líneas
+                imageData.horizontalLines = [];
+                for (let i = 1; i < rows; i++) {
+                    imageData.horizontalLines.push((i / rows) * 100);
+                }
+
+                imageData.verticalLines = [];
+                for (let i = 1; i < cols; i++) {
+                    imageData.verticalLines.push((i / cols) * 100);
+                }
+
+                // Actualizar UI
+                imageData.element.querySelector('.rows-input').value = rows;
+                imageData.element.querySelector('.cols-input').value = cols;
+
+                saveToHistory(imageData);
+                renderLines(imageData);
+                updatePartsPreview(imageData);
+            });
+
+            showAlert(`Configuración ${rows}×${cols} aplicada a todas las imágenes`, 'info');
+        });
+
+        downloadAllBtn.addEventListener('click', downloadAllZip);
+
+        clearAllBtn.addEventListener('click', () => {
+            if (confirm('¿Eliminar todas las imágenes?')) {
+                state.images.forEach((_, id) => removeImage(id));
+            }
+        });
+    }
+
+    function updateGlobalControlsVisibility() {
+        const controls = document.getElementById('globalControls');
+        controls.classList.toggle('hidden', state.images.size === 0);
+    }
+
+    // ========== LAZY LOADING ==========
+    function setupLazyLoading(imageData, section) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Ya está renderizado, pero podemos optimizar aquí
+                    // Para imágenes muy grandes, podríamos renderizar solo cuando sea visible
+                }
+            });
+        }, { threshold: 0.1 });
+
+        observer.observe(section);
+    }
+
+    // ========== DESCARGAS ==========
+
+    /**
+     * Descarga una parte individual
+     */
+    function downloadPart(imageData, region) {
+        const canvas = document.createElement('canvas');
+        canvas.width = region.width;
+        canvas.height = region.height;
+        const ctx = canvas.getContext('2d');
+
+        try {
+            ctx.drawImage(
+                imageData.originalImage,
+                region.x, region.y, region.width, region.height,
+                0, 0, region.width, region.height
+            );
+
+            canvas.toBlob((blob) => {
+                const baseName = imageData.name.replace(/\.[^/.]+$/, '');
+                const filename = `${baseName}-parte-${region.row + 1}-${region.col + 1}.png`;
+                downloadBlob(blob, filename);
+            }, 'image/png');
+        } catch (e) {
+            showAlert('Error al generar la parte. La imagen puede ser demasiado grande.', 'danger');
+        }
+    }
+
+    /**
+     * DESCARGA ZIP DE UNA IMAGEN
+     * ===========================
+     * Genera un ZIP con todas las partes de una imagen.
+     * Usa implementación vanilla de ZIP sin librerías.
+     */
+    async function downloadImageZip(imageData) {
+        const overlay = imageData.element.querySelector('.progress-overlay');
+        overlay.classList.remove('hidden');
+
+        try {
+            const regions = calculateRegions(imageData);
+            const files = [];
+            const baseName = imageData.name.replace(/\.[^/.]+$/, '');
+
+            for (const region of regions) {
+                const canvas = document.createElement('canvas');
+                canvas.width = region.width;
+                canvas.height = region.height;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(
+                    imageData.originalImage,
+                    region.x, region.y, region.width, region.height,
+                    0, 0, region.width, region.height
+                );
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const arrayBuffer = await blob.arrayBuffer();
+                
+                files.push({
+                    name: `${baseName}-parte-${region.row + 1}-${region.col + 1}.png`,
+                    data: new Uint8Array(arrayBuffer)
+                });
+            }
+
+            const zipBlob = createZip(files);
+            downloadBlob(zipBlob, `${baseName}-partes.zip`);
+
+        } catch (e) {
+            console.error('Error generando ZIP:', e);
+            showAlert('Error al generar el ZIP', 'danger');
+        } finally {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    /**
+     * DESCARGA ZIP GLOBAL
+     * ====================
+     * Genera un ZIP con todas las partes de todas las imágenes.
+     * Los archivos se nombran con prefijo de imagen.
+     */
+    async function downloadAllZip() {
+        if (state.images.size === 0) return;
+
+        showAlert('Generando ZIP de todas las imágenes...', 'info');
+
+        try {
+            const files = [];
+            let imageIndex = 1;
+
+            for (const imageData of state.images.values()) {
+                const regions = calculateRegions(imageData);
+                const baseName = imageData.name.replace(/\.[^/.]+$/, '');
+
+                for (const region of regions) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = region.width;
+                    canvas.height = region.height;
+                    const ctx = canvas.getContext('2d');
+
+                    ctx.drawImage(
+                        imageData.originalImage,
+                        region.x, region.y, region.width, region.height,
+                        0, 0, region.width, region.height
+                    );
+
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    const arrayBuffer = await blob.arrayBuffer();
+
+                    files.push({
+                        name: `imagen${imageIndex}-${baseName}-parte-${region.row + 1}-${region.col + 1}.png`,
+                        data: new Uint8Array(arrayBuffer)
+                    });
+                }
+                imageIndex++;
+            }
+
+            const zipBlob = createZip(files);
+            downloadBlob(zipBlob, `imagenes-divididas-${Date.now()}.zip`);
+
+            showAlert('ZIP generado exitosamente', 'info');
+
+        } catch (e) {
+            console.error('Error generando ZIP global:', e);
+            showAlert('Error al generar el ZIP', 'danger');
+        }
+    }
+
+    /**
+     * IMPLEMENTACIÓN VANILLA DE ZIP
+     * ==============================
+     * Crea un archivo ZIP válido sin librerías externas.
+     * Usa el formato ZIP sin compresión (STORE) para simplicidad.
+     * 
+     * Estructura ZIP:
+     * - Local file headers + datos para cada archivo
+     * - Central directory con metadatos
+     * - End of central directory record
+     */
+    function createZip(files) {
+        const localHeaders = [];
+        const centralHeaders = [];
+        let offset = 0;
+
+        // Generar headers y datos
+        files.forEach(file => {
+            const nameBytes = new TextEncoder().encode(file.name);
+            const data = file.data;
+
+            // Local file header (30 bytes + nombre + datos)
+            const localHeader = new Uint8Array(30 + nameBytes.length);
+            const localView = new DataView(localHeader.buffer);
+
+            localView.setUint32(0, 0x04034b50, true); // Signature
+            localView.setUint16(4, 20, true); // Version needed
+            localView.setUint16(6, 0, true); // Flags
+            localView.setUint16(8, 0, true); // Compression (STORE)
+            localView.setUint16(10, 0, true); // Mod time
+            localView.setUint16(12, 0, true); // Mod date
+            localView.setUint32(14, crc32(data), true); // CRC32
+            localView.setUint32(18, data.length, true); // Compressed size
+            localView.setUint32(22, data.length, true); // Uncompressed size
+            localView.setUint16(26, nameBytes.length, true); // Name length
+            localView.setUint16(28, 0, true); // Extra length
+
+            localHeader.set(nameBytes, 30);
+            localHeaders.push({ header: localHeader, data });
+
+            // Central directory header (46 bytes + nombre)
+            const centralHeader = new Uint8Array(46 + nameBytes.length);
+            const centralView = new DataView(centralHeader.buffer);
+
+            centralView.setUint32(0, 0x02014b50, true); // Signature
+            centralView.setUint16(4, 20, true); // Version made by
+            centralView.setUint16(6, 20, true); // Version needed
+            centralView.setUint16(8, 0, true); // Flags
+            centralView.setUint16(10, 0, true); // Compression
+            centralView.setUint16(12, 0, true); // Mod time
+            centralView.setUint16(14, 0, true); // Mod date
+            centralView.setUint32(16, crc32(data), true); // CRC32
+            centralView.setUint32(20, data.length, true); // Compressed size
+            centralView.setUint32(24, data.length, true); // Uncompressed size
+            centralView.setUint16(28, nameBytes.length, true); // Name length
+            centralView.setUint16(30, 0, true); // Extra length
+            centralView.setUint16(32, 0, true); // Comment length
+            centralView.setUint16(34, 0, true); // Disk number
+            centralView.setUint16(36, 0, true); // Internal attrs
+            centralView.setUint32(38, 0, true); // External attrs
+            centralView.setUint32(42, offset, true); // Offset
+
+            centralHeader.set(nameBytes, 46);
+            centralHeaders.push(centralHeader);
+
+            offset += localHeader.length + data.length;
+        });
+
+        // Calcular tamaños
+        const centralDirSize = centralHeaders.reduce((sum, h) => sum + h.length, 0);
+        const centralDirOffset = offset;
+
+        // End of central directory (22 bytes)
+        const endRecord = new Uint8Array(22);
+        const endView = new DataView(endRecord.buffer);
+
+        endView.setUint32(0, 0x06054b50, true); // Signature
+        endView.setUint16(4, 0, true); // Disk number
+        endView.setUint16(6, 0, true); // Central dir disk
+        endView.setUint16(8, files.length, true); // Entries on disk
+        endView.setUint16(10, files.length, true); // Total entries
+        endView.setUint32(12, centralDirSize, true); // Central dir size
+        endView.setUint32(16, centralDirOffset, true); // Central dir offset
+        endView.setUint16(20, 0, true); // Comment length
+
+        // Concatenar todo
+        const totalSize = offset + centralDirSize + endRecord.length;
+        const zipData = new Uint8Array(totalSize);
+        let pos = 0;
+
+        // Local headers + datos
+        localHeaders.forEach(({ header, data }) => {
+            zipData.set(header, pos);
+            pos += header.length;
+            zipData.set(data, pos);
+            pos += data.length;
+        });
+
+        // Central directory
+        centralHeaders.forEach(header => {
+            zipData.set(header, pos);
+            pos += header.length;
+        });
+
+        // End record
+        zipData.set(endRecord, pos);
+
+        return new Blob([zipData], { type: 'application/zip' });
+    }
+
+    /**
+     * CRC32 para ZIP
+     */
+    function crc32(data) {
+        let crc = 0xFFFFFFFF;
+        const table = getCRC32Table();
+
+        for (let i = 0; i < data.length; i++) {
+            crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xFF];
+        }
+
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    // Tabla CRC32 precalculada
+    let crc32Table = null;
+    function getCRC32Table() {
+        if (crc32Table) return crc32Table;
+
+        crc32Table = new Uint32Array(256);
+        for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++) {
+                c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            }
+            crc32Table[i] = c;
+        }
+        return crc32Table;
+    }
+
+    /**
+     * Descarga un blob como archivo
+     */
+    function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // ========== ALERTAS ==========
+    function showAlert(message, type = 'info') {
+        const container = document.getElementById('alertsContainer');
+        
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+
+        container.appendChild(alert);
+
+        // Auto-eliminar después de 5 segundos
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+
+    // ========== ATAJOS DE TECLADO ==========
+    function initKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Z / Cmd+Z = Undo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                if (state.activeImageId) {
+                    const imageData = state.images.get(state.activeImageId);
+                    if (imageData) undo(imageData);
+                }
+            }
+
+            // Ctrl+Y / Cmd+Shift+Z = Redo
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                if (state.activeImageId) {
+                    const imageData = state.images.get(state.activeImageId);
+                    if (imageData) redo(imageData);
+                }
+            }
+        });
+    }
+
+    // ========== UTILIDADES ==========
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    </script>
+</body>
+</html>

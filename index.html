@@ -699,11 +699,11 @@
         <div class="global-controls hidden" id="globalControls">
             <div class="global-left">
                 <div class="control-group">
-                    <label>Filas globales:</label>
+                    <label>Vertical de forma global:</label>
                     <input type="number" id="globalRows" value="1" min="1" max="50">
                 </div>
                 <div class="control-group">
-                    <label>Columnas globales:</label>
+                    <label>Horizontal de forma global:</label>
                     <input type="number" id="globalCols" value="1" min="1" max="50">
                 </div>
                 <button class="btn btn-primary btn-small" id="applyGlobalBtn">Aplicar a todas</button>
@@ -733,7 +733,7 @@
             <h3>📌 Cómo usar:</h3>
             <ul>
                 <li><strong>Cargar:</strong> Arrastra imágenes o usa el botón de selección.</li>
-                <li><strong>Configurar:</strong> Ajusta filas y columnas para cada imagen. Las líneas se generan automáticamente.</li>
+                <li><strong>Configurar:</strong> Ajusta Vertical y Horizontal para cada imagen. Las líneas se generan automáticamente.</li>
                 <li><strong>Ajustar:</strong> Arrastra las líneas divisoras para ajustes precisos.</li>
                 <li><strong>Eliminar línea:</strong> Haz clic en la × que aparece al pasar sobre una línea.</li>
                 <li><strong>Global:</strong> Usa "Aplicar a todas" para copiar la configuración a todas las imágenes.</li>
@@ -765,7 +765,7 @@
      * 
      * ARQUITECTURA:
      * - Cada imagen tiene su propio estado independiente (líneas, zoom, historial)
-     * - Las líneas se generan automáticamente basándose en filas/columnas
+     * - Las líneas se generan automáticamente basándose en Vertical/Horizontal
      * - Sistema de undo/redo por imagen
      * - ZIP generado 100% client-side sin librerías externas
      * 

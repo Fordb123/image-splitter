@@ -1774,9 +1774,12 @@
             getParts() {
                 const parts = [];
                 
-                const vLimitsPixels = [0, ...this.verticalLines.map(p => Math.round((p / 100) * this.width)), this.width];
-                const hLimitsPixels = [0, ...this.horizontalLines.map(p => Math.round((p / 100) * this.height)), this.height];
+                // Calcular límites exactos en píxeles con precisión 100%
+                // Usamos Math.floor para evitar errores de redondeo acumulativos
+                const vLimitsPixels = [0, ...this.verticalLines.map(p => Math.floor((p / 100) * this.width)), this.width];
+                const hLimitsPixels = [0, ...this.horizontalLines.map(p => Math.floor((p / 100) * this.height)), this.height];
                 
+                // Generar partes con coordenadas exactas
                 for (let row = 0; row < hLimitsPixels.length - 1; row++) {
                     for (let col = 0; col < vLimitsPixels.length - 1; col++) {
                         const x = vLimitsPixels[col];
@@ -1810,16 +1813,12 @@
                 if (canvas._renderedWith === `${part.x}-${part.y}-${part.width}-${part.height}`) return;
                 
                 try {
-                    const exactX = Math.round(part.x);
-                    const exactY = Math.round(part.y);
-                    const exactWidth = Math.round(part.width);
-                    const exactHeight = Math.round(part.height);
-                    
+                    // Usar coordenadas exactas sin redondear
                     const maxSize = 150;
-                    const scale = Math.min(maxSize / exactWidth, maxSize / exactHeight, 1);
+                    const scale = Math.min(maxSize / part.width, maxSize / part.height, 1);
                     
-                    canvas.width = Math.round(exactWidth * scale);
-                    canvas.height = Math.round(exactHeight * scale);
+                    canvas.width = part.width * scale;
+                    canvas.height = part.height * scale;
                     
                     const ctx = canvas.getContext('2d');
                     ctx.imageSmoothingEnabled = true;
@@ -1827,7 +1826,7 @@
                     
                     ctx.drawImage(
                         this.image,
-                        exactX, exactY, exactWidth, exactHeight,
+                        part.x, part.y, part.width, part.height,
                         0, 0, canvas.width, canvas.height
                     );
                     
@@ -1841,14 +1840,10 @@
 
             downloadPart(part) {
                 try {
-                    const exactX = Math.round(part.x);
-                    const exactY = Math.round(part.y);
-                    const exactWidth = Math.round(part.width);
-                    const exactHeight = Math.round(part.height);
-                    
+                    // Usar coordenadas exactas sin redondear
                     const canvas = document.createElement('canvas');
-                    canvas.width = exactWidth;
-                    canvas.height = exactHeight;
+                    canvas.width = part.width;
+                    canvas.height = part.height;
                     
                     const ctx = canvas.getContext('2d');
                     ctx.imageSmoothingEnabled = true;
@@ -1856,8 +1851,8 @@
                     
                     ctx.drawImage(
                         this.image,
-                        exactX, exactY, exactWidth, exactHeight,
-                        0, 0, exactWidth, exactHeight
+                        part.x, part.y, part.width, part.height,
+                        0, 0, part.width, part.height
                     );
                     
                     const label = this.getPartLabel(part.row, part.col);
@@ -1893,14 +1888,10 @@
                     for (let i = 0; i < parts.length; i++) {
                         const part = parts[i];
                         
-                        const exactX = Math.round(part.x);
-                        const exactY = Math.round(part.y);
-                        const exactWidth = Math.round(part.width);
-                        const exactHeight = Math.round(part.height);
-                        
+                        // Usar coordenadas exactas sin redondear
                         const canvas = document.createElement('canvas');
-                        canvas.width = exactWidth;
-                        canvas.height = exactHeight;
+                        canvas.width = part.width;
+                        canvas.height = part.height;
                         
                         const ctx = canvas.getContext('2d');
                         ctx.imageSmoothingEnabled = true;
@@ -1908,8 +1899,8 @@
                         
                         ctx.drawImage(
                             this.image,
-                            exactX, exactY, exactWidth, exactHeight,
-                            0, 0, exactWidth, exactHeight
+                            part.x, part.y, part.width, part.height,
+                            0, 0, part.width, part.height
                         );
                         
                         const blob = await new Promise(resolve => {
@@ -2261,14 +2252,13 @@
                 try {
                     const zip = new JSZip();
                     
-                    const imagesPerOutput = Math.ceil(loadedImages.length / mergeLines.length - 1);
-                    
                     for (let outputIndex = 0; outputIndex < mergeLines.length + 1; outputIndex++) {
                         const startPos = outputIndex === 0 ? 0 : mergeLines[outputIndex - 1];
                         const endPos = outputIndex === mergeLines.length ? 100 : mergeLines[outputIndex];
                         
+                        // Calcular índices con precisión usando Math.floor
                         const startIdx = Math.floor((startPos / 100) * loadedImages.length);
-                        const endIdx = Math.ceil((endPos / 100) * loadedImages.length);
+                        const endIdx = Math.min(Math.ceil((endPos / 100) * loadedImages.length), loadedImages.length);
                         
                         const imagesToMerge = loadedImages.slice(startIdx, endIdx);
                         

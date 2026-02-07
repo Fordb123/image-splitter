@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divisor de Imágenes Gratuito Online - Múltiples Fotos, Divisiones Independientes o Globales, Automático por Número de Partes</title>
+    <meta name="description" content="Divisor de imágenes online gratuito. Divide múltiples imágenes simultáneamente con control independiente o global. Soporte para filas/columnas personalizables, líneas arrastrables y descarga en ZIP.">
+    <meta name="keywords" content="dividir imágenes, image splitter, cortar imágenes, dividir foto online, image slicer, image grid">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Divisor de Imágenes Gratuito Online">
+    <meta property="og:description" content="Divide múltiples imágenes simultáneamente con control independiente o global. Gratis y 100% client-side.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- JSZip para generación de ZIP (única dependencia externa necesaria para ZIP) -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    
+    <style>
+        /* ========================================
+           VARIABLES CSS Y TEMA
+           ======================================== */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger-color: #dc2626;
+            --success-color: #16a34a;
+            --warning-color: #f59e0b;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 8px;
+            --line-color: #ef4444;
+            --line-width: 2px;
+        }
+
+        /* Tema oscuro (auto basado en preferencia del sistema) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f0f0f;
+                --bg-secondary: #1a1a1a;
+                --bg-card: #1f1f1f;
+                --text-primary: #e5e5e5;
+                --text-secondary: #a3a3a3;
+                --border-color: #404040;
+                --primary-color: #3b82f6;
+                --primary-hover: #60a5fa;
+                --shadow: 0 1px 3px rgba(0,0,0,0.3);
+                --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3);
+            }
+        }
+
+        /* ========================================
+           ESTILOS BASE
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========================================
+           HEADER
+           ======================================== */
+        header {
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-title p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ========================================
+           MAIN CONTENT
+           ======================================== */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ========================================
+           CONTROLES DE CARGA
+           ======================================== */
+        .upload-section {
+            background: var(--bg-card);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover, .upload-section.dragover {
+            border-color: var(--primary-color);
+            background: var(--bg-secondary);
+        }
+
+        .upload-section h2 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .upload-section p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* ========================================
+           BOTONES
+           ======================================== */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #15803d;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #b91c1c;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* ========================================
+           INPUTS
+           ======================================== */
+        .input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .input-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            width: 70px;
+        }
+
+        /* ========================================
+           ALERTAS Y MENSAJES
+           ======================================== */
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .alert-warning {
+                background: #451a03;
+                color: #fcd34d;
+                border-color: #92400e;
+            }
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .alert-info {
+                background: #1e3a5f;
+                color: #93c5fd;
+                border-color: #1e40af;
+            }
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .alert-danger {
+                background: #450a0a;
+                color: #fca5a5;
+                border-color: #991b1b;
+            }
+        }
+
+        /* ========================================
+           SECCIÓN DE IMÁGENES
+           ======================================== */
+        .images-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .image-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* ========================================
+           CONTROLES SUPERIORES POR IMAGEN
+           ======================================== */
+        .image-controls {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .image-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .image-dimensions {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border-color);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked + .switch-slider {
+            background: var(--primary-color);
+        }
+
+        .switch input:checked + .switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* ========================================
+           PREVIEW WRAPPER CON CANVAS
+           ======================================== */
+        .preview-container {
+            padding: 1rem;
+            background: var(--bg-primary);
+        }
+
+        .preview-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: repeating-conic-gradient(var(--border-color) 0% 25%, var(--bg-primary) 0% 50%) 50% / 20px 20px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            min-height: 300px;
+        }
+
+        .preview-wrapper.zoomed {
+            overflow: auto;
+            cursor: grab;
+        }
+
+        .preview-wrapper.zoomed:active {
+            cursor: grabbing;
+        }
+
+        .preview-canvas-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .preview-canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
+        }
+
+        /* ========================================
+           LÍNEAS DIVISORAS ARRASTRABLES
+           ======================================== */
+        .divider-line {
+            position: absolute;
+            background: var(--line-color);
+            cursor: move;
+            z-index: 10;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .divider-line:hover, .divider-line.dragging {
+            opacity: 1;
+            background: #f87171;
+        }
+
+        /* Líneas verticales */
+        .divider-line.vertical {
+            top: 0;
+            bottom: 0;
+            width: var(--line-width);
+            height: 100%;
+        }
+
+        /* Líneas horizontales */
+        .divider-line.horizontal {
+            left: 0;
+            right: 0;
+            height: var(--line-width);
+            width: 100%;
+        }
+
+        /* Área táctil expandida para mejor manejo en móvil */
+        .divider-line::before {
+            content: '';
+            position: absolute;
+            background: transparent;
+            z-index: 1;
+        }
+
+        .divider-line.vertical::before {
+            top: 0;
+            bottom: 0;
+            left: -10px;
+            right: -10px;
+        }
+
+        .divider-line.horizontal::before {
+            left: 0;
+            right: 0;
+            top: -10px;
+            bottom: -10px;
+        }
+
+        /* ========================================
+           CONTROLES DE ZOOM
+           ======================================== */
+        .zoom-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 20;
+        }
+
+        .zoom-level {
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* ========================================
+           THUMBNAILS DE PREVISIÓN
+           ======================================== */
+        .preview-thumbnails {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .preview-thumbnails h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .thumbnails-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+        }
+
+        .thumbnail-item {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .thumbnail-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .thumbnail-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            display: block;
+        }
+
+        .thumbnail-info {
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .thumbnail-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+
+        .thumbnail-actions {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: center;
+        }
+
+        /* ========================================
+           ACTIONS POR IMAGEN
+           ======================================== */
+        .image-actions {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .image-actions-left {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ========================================
+           ACCIONES GLOBALES
+           ======================================== */
+        .global-actions {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .global-actions h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .global-actions-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ========================================
+           PROGRESS/SPINNER
+           ======================================== */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        /* ========================================
+           TUTORIAL MODAL
+           ======================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+        }
+
+        .modal-close:hover {
+            background: var(--bg-secondary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-body h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p, .modal-body li {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .modal-body ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* ========================================
+           FOOTER
+           ======================================== */
+        footer {
+            background: var(--bg-secondary);
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            margin-top: auto;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* ========================================
+           RESPONSIVE DESIGN
+           ======================================== */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .image-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                justify-content: space-between;
+            }
+
+            .control-buttons {
+                justify-content: center;
+            }
+
+            .image-actions {
+                flex-direction: column;
+            }
+
+            .image-actions-left {
+                justify-content: center;
+            }
+
+            .global-actions {
+                flex-direction: column;
+            }
+
+            .global-actions-buttons {
+                justify-content: center;
+            }
+
+            .thumbnails-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            .preview-wrapper {
+                min-height: 200px;
+            }
+
+            /* Mejoras para móvil: texto más grande en controles */
+            .input-sm {
+                width: 60px;
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+
+            .btn {
+                min-height: 44px; /* Touch target mínimo */
+            }
+
+            /* Líneas divisorias más gruesas en móvil para mejor visibilidad */
+            .divider-line {
+                --line-width: 3px;
+            }
+        }
+
+        /* ========================================
+           UTILIDADES
+           ======================================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* ========================================
+           ANIMACIONES
+           ======================================== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .image-section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <h1>✂️ Divisor de Imágenes</h1>
+                <p>Gratis • Privado • 100% Client-Side</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="helpBtn">❓ Ayuda</button>
+                <button class="btn btn-secondary" id="clearAllBtn">🗑️ Limpiar Todo</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- SECCIÓN DE CARGA -->
+        <section class="upload-section" id="uploadSection">
+            <h2>📤 Cargar Imágenes</h2>
+            <p>Arrastra imágenes aquí o haz clic para seleccionar</p>
+            <p style="font-size: 0.75rem; color: var(--text-secondary);">
+                Máximo 50 MB por imagen • Advertencia si >5 imágenes o >200 MB total
+            </p>
+            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+            <button class="btn btn-primary" id="selectFilesBtn">
+                📁 Seleccionar Imágenes
+            </button>
+        </section>
+
+        <!-- ALERTAS -->
+        <div id="alertsContainer"></div>
+
+        <!-- ACCIONES GLOBALES -->
+        <section class="global-actions hidden" id="globalActions">
+            <h2>🌐 Acciones Globales</h2>
+            <div class="global-actions-buttons">
+                <button class="btn btn-primary" id="downloadAllBtn">📦 Descargar Todo (ZIP)</button>
+                <button class="btn btn-secondary" id="applyAllBtn">📋 Aplicar Config. a Todas</button>
+            </div>
+        </section>
+
+        <!-- CONTENEDOR DE IMÁGENES -->
+        <section class="images-container" id="imagesContainer"></section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>
+            ✂️ Divisor de Imágenes Gratuito Online - Procesamiento 100% local, tus imágenes nunca salen de tu dispositivo.
+            <br>
+            Recomendado: Chrome/Firefox en desktop. Móvil/Safari puede tener limitaciones de tamaño.
+        </p>
+    </footer>
+
+    <!-- MODAL DE TUTORIAL -->
+    <div class="modal-overlay hidden" id="tutorialModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📖 Tutorial de Uso</h2>
+                <button class="modal-close" id="closeTutorial">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>1️⃣ Cargar Imágenes</h3>
+                <ul>
+                    <li>Arrastra imágenes al área de carga o usa "Seleccionar Imágenes"</li>
+                    <li>Puedes cargar múltiples imágenes a la vez</li>
+                    <li>Límite: 50 MB por imagen, advertencia si >5 imágenes o >200 MB total</li>
+                </ul>
+
+                <h3>2️⃣ Configurar Divisiones</h3>
+                <ul>
+                    <li><strong>Div. Vertical (Columnas):</strong> Número de columnas horizontales</li>
+                    <li><strong>Div. Horizontal (Filas):</strong> Número de filas verticales</li>
+                    <li>Cambia los números y presiona "Generar Líneas" para dividir automáticamente</li>
+                </ul>
+
+                <h3>3️⃣ Ajustar Líneas Manualmente</h3>
+                <ul>
+                    <li>Las líneas rojas son arrastrables: arrástralas para ajustar posición</li>
+                    <li>Líneas verticales: dividen horizontalmente (columnas)</li>
+                    <li>Líneas horizontales: dividen verticalmente (filas)</li>
+                    <li>Puedes añadir más líneas arrastrando desde los bordes</li>
+                </ul>
+
+                <h3>4️⃣ Modo Global</h3>
+                <ul>
+                    <li>Activa "Aplicar a todas" para copiar la configuración actual a todas las imágenes</li>
+                    <li>Útil para dividir múltiples imágenes con la misma cuadrícula</li>
+                </ul>
+
+                <h3>5️⃣ Vista Previa y Descarga</h3>
+                <ul>
+                    <li>Las vistas previas se actualizan en tiempo real al mover líneas</li>
+                    <li>Descarga partes individuales o completa en ZIP</li>
+                    <li>Usa "Descargar Todo" para obtener todas las partes de todas las imágenes</li>
+                </ul>
+
+                <h3>💡 Consejos</h3>
+                <ul>
+                    <li>Usa el zoom para imágenes grandes (botones + / -)</li>
+                    <li>Undo/redo disponible por imagen (botones ↩️ / ↪️)</li>
+                    <li>Advertencia si imagen >30000 px (límite del navegador)</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="dontShowAgainBtn">No mostrar de nuevo</button>
+                <button class="btn btn-primary" id="closeTutorialBtn">¡Entendido!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================
+           ESTADO GLOBAL DE LA APLICACIÓN
+           ======================================== */
+        const AppState = {
+            images: [], // Array de objetos ImageData
+            nextId: 1,
+            maxFileSize: 50 * 1024 * 1024, // 50 MB
+            warningImageCount: 5,
+            warningTotalSize: 200 * 1024 * 1024, // 200 MB
+            maxDimension: 30000 // px
+        };
+
+        /* ========================================
+           CLASE ImageData
+           Maneja toda la lógica de una imagen individual
+           ======================================== */
+        class ImageData {
+            constructor(file, id) {
+                this.id = id;
+                this.file = file;
+                this.name = file.name;
+                this.size = file.size;
+                
+                // Configuración de división
+                this.rows = 1; // Divisiones horizontales (filas)
+                this.cols = 1; // Divisiones verticales (columnas)
+                
+                // Líneas divisorias (en porcentaje 0-100)
+                // Líneas horizontales: dividen verticalmente, posición en % del alto
+                // Líneas verticales: dividen horizontalmente, posición en % del ancho
+                this.horizontalLines = []; // Array de posiciones en %
+                this.verticalLines = [];   // Array de posiciones en %
+                
+                // Estado de zoom
+                this.zoom = 1;
+                this.isZoomed = false;
+                
+                // Historial para undo/redo
+                this.history = [];
+                this.historyIndex = -1;
+                
+                // Estado de carga
+                this.isLoaded = false;
+                this.isLoading = false;
+                
+                // Referencias DOM
+                this.elements = {};
+                
+                // Cargar imagen
+                this.loadImage();
+            }
+
+            /**
+             * Carga la imagen desde el archivo
+             * Maneja errores de memoria y dimensiones excesivas
+             */
+            async loadImage() {
+                this.isLoading = true;
+                this.renderLoading();
+                
+                try {
+                    // Verificar dimensiones antes de cargar
+                    const img = new Image();
+                    
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            if (img.width > AppState.maxDimension || img.height > AppState.maxDimension) {
+                                reject(new Error(
+                                    `Imagen demasiado grande: ${img.width}x${img.height}px. ` +
+                                    `Máximo permitido: ${AppState.maxDimension}px`
+                                ));
+                            } else {
+                                resolve();
+                            }
+                        };
+                        img.onerror = () => reject(new Error('Error al cargar la imagen'));
+                        img.src = URL.createObjectURL(this.file);
+                    });
+                    
+                    this.image = img;
+                    this.width = img.width;
+                    this.height = img.height;
+                    
+                    // Guardar estado inicial en historial
+                    this.saveState();
+                    
+                    this.isLoaded = true;
+                    this.render();
+                    
+                } catch (error) {
+                    console.error('Error cargando imagen:', error);
+                    this.renderError(error.message);
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
+            /**
+             * Guarda el estado actual en el historial
+             * Permite funcionalidad de undo/redo por imagen
+             */
+            saveState() {
+                // Eliminar estados futuros si estamos en medio del historial
+                this.history = this.history.slice(0, this.historyIndex + 1);
+                
+                // Guardar estado actual
+                this.history.push({
+                    rows: this.rows,
+                    cols: this.cols,
+                    horizontalLines: [...this.horizontalLines],
+                    verticalLines: [...this.verticalLines]
+                });
+                
+                // Limitar historial a 50 estados para evitar problemas de memoria
+                if (this.history.length > 50) {
+                    this.history.shift();
+                }
+                
+                this.historyIndex = this.history.length - 1;
+                this.updateUndoRedoButtons();
+            }
+
+            /**
+             * Deshace el último cambio
+             * Funcionalidad undo local por imagen
+             */
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.restoreState(this.history[this.historyIndex]);
+                }
+            }
+
+            /**
+             * Rehace el último cambio deshecho
+             * Funcionalidad redo local por imagen
+             */
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.restoreState(this.history[this.historyIndex]);
+                }
+            }
+
+            /**
+             * Restaura un estado del historial
+             * @param {Object} state - Estado a restaurar
+             */
+            restoreState(state) {
+                this.rows = state.rows;
+                this.cols = state.cols;
+                this.horizontalLines = [...state.horizontalLines];
+                this.verticalLines = [...state.verticalLines];
+                
+                // Actualizar UI
+                this.updateInputs();
+                this.renderLines();
+                this.updatePreviews();
+                this.updateUndoRedoButtons();
+            }
+
+            /**
+             * Genera líneas divisorias automáticas basadas en filas/columnas
+             * Ej: 3 columnas -> líneas al 33.3% y 66.6%
+             *     4 filas -> líneas al 25%, 50%, 75%
+             */
+            generateAutoLines() {
+                this.rows = parseInt(this.elements.rowsInput.value) || 1;
+                this.cols = parseInt(this.elements.colsInput.value) || 1;
+                
+                // Generar líneas horizontales (filas)
+                // Dividen la imagen verticalmente en N filas
+                this.horizontalLines = [];
+                for (let i = 1; i < this.rows; i++) {
+                    this.horizontalLines.push((i / this.rows) * 100);
+                }
+                
+                // Generar líneas verticales (columnas)
+                // Dividen la imagen horizontalmente en M columnas
+                this.verticalLines = [];
+                for (let i = 1; i < this.cols; i++) {
+                    this.verticalLines.push((i / this.cols) * 100);
+                }
+                
+                // Guardar estado y actualizar UI
+                this.saveState();
+                this.renderLines();
+                this.updatePreviews();
+            }
+
+            /**
+             * Aplica la configuración de otra imagen
+             * Copia filas/columnas y posiciones de líneas
+             * @param {ImageData} source - Imagen origen de la configuración
+             */
+            applyConfig(source) {
+                this.rows = source.rows;
+                this.cols = source.cols;
+                this.horizontalLines = [...source.horizontalLines];
+                this.verticalLines = [...source.verticalLines];
+                
+                this.saveState();
+                this.updateInputs();
+                this.renderLines();
+                this.updatePreviews();
+            }
+
+            /**
+             * Renderiza la sección completa de la imagen
+             */
+            render() {
+                if (!this.elements.container) {
+                    this.elements.container = document.createElement('div');
+                    this.elements.container.className = 'image-section';
+                    this.elements.container.id = `image-${this.id}`;
+                    document.getElementById('imagesContainer').appendChild(this.elements.container);
+                }
+                
+                this.elements.container.innerHTML = `
+                    <div class="image-controls">
+                        <div class="image-name">
+                            ${this.name}
+                            <span class="image-dimensions">${this.width}×${this.height}</span>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Div. Vertical:</label>
+                            <input type="number" class="input input-sm rows-input" value="${this.cols}" min="1" max="20">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Div. Horizontal:</label>
+                            <input type="number" class="input input-sm cols-input" value="${this.rows}" min="1" max="20">
+                        </div>
+                        <div class="control-buttons">
+                            <button class="btn btn-sm btn-primary generate-btn">Generar Líneas</button>
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="checkbox" class="apply-all-toggle">
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <span class="control-label">Aplicar a todas</span>
+                            </div>
+                        </div>
+                        <div class="control-buttons">
+                            <button class="btn btn-sm btn-secondary undo-btn" disabled>↩️</button>
+                            <button class="btn btn-sm btn-secondary redo-btn" disabled>↪️</button>
+                            <button class="btn btn-sm btn-danger remove-btn">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="preview-container">
+                        <div class="preview-wrapper" id="preview-wrapper-${this.id}">
+                            <div class="preview-canvas-container" id="canvas-container-${this.id}">
+                                <canvas class="preview-canvas" id="canvas-${this.id}"></canvas>
+                            </div>
+                            <div class="zoom-controls">
+                                <button class="btn btn-sm btn-secondary zoom-out">-</button>
+                                <span class="zoom-level">100%</span>
+                                <button class="btn btn-sm btn-secondary zoom-in">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-thumbnails">
+                        <h3>📊 Vista Previa (${(this.horizontalLines.length + 1) * (this.verticalLines.length + 1)} partes)</h3>
+                        <div class="thumbnails-grid" id="thumbnails-${this.id}"></div>
+                    </div>
+                    <div class="image-actions">
+                        <div class="image-actions-left">
+                            <button class="btn btn-success download-zip-btn">📦 Descargar ZIP</button>
+                        </div>
+                        <div class="progress-container hidden" id="progress-${this.id}">
+                            <div class="spinner"></div>
+                            <span>Procesando...</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Guardar referencias a elementos
+                this.elements.rowsInput = this.elements.container.querySelector('.cols-input');
+                this.elements.colsInput = this.elements.container.querySelector('.rows-input');
+                this.elements.generateBtn = this.elements.container.querySelector('.generate-btn');
+                this.elements.applyAllToggle = this.elements.container.querySelector('.apply-all-toggle');
+                this.elements.undoBtn = this.elements.container.querySelector('.undo-btn');
+                this.elements.redoBtn = this.elements.container.querySelector('.redo-btn');
+                this.elements.removeBtn = this.elements.container.querySelector('.remove-btn');
+                this.elements.downloadZipBtn = this.elements.container.querySelector('.download-zip-btn');
+                this.elements.canvas = this.elements.container.querySelector(`#canvas-${this.id}`);
+                this.elements.canvasContainer = this.elements.container.querySelector(`#canvas-container-${this.id}`);
+                this.elements.previewWrapper = this.elements.container.querySelector(`#preview-wrapper-${this.id}`);
+                this.elements.thumbnailsContainer = this.elements.container.querySelector(`#thumbnails-${this.id}`);
+                this.elements.progressContainer = this.elements.container.querySelector(`#progress-${this.id}`);
+                this.elements.zoomIn = this.elements.container.querySelector('.zoom-in');
+                this.elements.zoomOut = this.elements.container.querySelector('.zoom-out');
+                this.elements.zoomLevel = this.elements.container.querySelector('.zoom-level');
+                
+                // Event listeners
+                this.attachEventListeners();
+                
+                // Dibujar imagen en canvas
+                this.drawCanvas();
+                
+                // Actualizar previews
+                this.updatePreviews();
+            }
+
+            /**
+             * Renderiza estado de carga
+             */
+            renderLoading() {
+                if (!this.elements.container) {
+                    this.elements.container = document.createElement('div');
+                    this.elements.container.className = 'image-section loading';
+                    document.getElementById('imagesContainer').appendChild(this.elements.container);
+                }
+                this.elements.container.innerHTML = `
+                    <div style="padding: 2rem; text-align: center;">
+                        <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 1rem;"></div>
+                        <p>Cargando ${this.name}...</p>
+                    </div>
+                `;
+            }
+
+            /**
+             * Renderiza estado de error
+             */
+            renderError(message) {
+                if (!this.elements.container) {
+                    this.elements.container = document.createElement('div');
+                    this.elements.container.className = 'image-section';
+                    document.getElementById('imagesContainer').appendChild(this.elements.container);
+                }
+                this.elements.container.innerHTML = `
+                    <div class="alert alert-danger" style="margin: 0;">
+                        <span>❌</span>
+                        <div>
+                            <strong>Error:</strong> ${this.name}
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * Adjunta event listeners a los elementos
+             */
+            attachEventListeners() {
+                // Generar líneas automáticas
+                this.elements.generateBtn.addEventListener('click', () => {
+                    this.generateAutoLines();
+                });
+                
+                // Toggle "aplicar a todas"
+                this.elements.applyAllToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        this.applyConfigToAll();
+                        e.target.checked = false;
+                    }
+                });
+                
+                // Undo/Redo
+                this.elements.undoBtn.addEventListener('click', () => this.undo());
+                this.elements.redoBtn.addEventListener('click', () => this.redo());
+                
+                // Remover imagen
+                this.elements.removeBtn.addEventListener('click', () => {
+                    this.dispose();
+                    AppState.images = AppState.images.filter(img => img.id !== this.id);
+                    this.elements.container.remove();
+                    updateGlobalActions();
+                });
+                
+                // Descargar ZIP
+                this.elements.downloadZipBtn.addEventListener('click', () => {
+                    this.downloadZip();
+                });
+                
+                // Zoom
+                this.elements.zoomIn.addEventListener('click', () => this.zoomIn());
+                this.elements.zoomOut.addEventListener('click', () => this.zoomOut());
+                
+                // Pan con rueda del ratón
+                this.elements.previewWrapper.addEventListener('wheel', (e) => {
+                    if (this.isZoomed) {
+                        e.preventDefault();
+                        this.elements.previewWrapper.scrollLeft += e.deltaX;
+                        this.elements.previewWrapper.scrollTop += e.deltaY;
+                    }
+                });
+                
+                // Inicializar líneas arrastrables
+                this.initDraggableLines();
+            }
+
+            /**
+             * Aplica la configuración actual a todas las imágenes
+             * Modo global: copia filas/columnas y posiciones de líneas
+             */
+            applyConfigToAll() {
+                AppState.images.forEach(img => {
+                    if (img.id !== this.id && img.isLoaded) {
+                        img.applyConfig(this);
+                    }
+                });
+                showAlert('✅ Configuración aplicada a todas las imágenes', 'success');
+            }
+
+            /**
+             * Dibuja la imagen en el canvas
+             * Maneja errores de drawImage para dimensiones grandes
+             */
+            drawCanvas() {
+                if (!this.image || !this.elements.canvas) return;
+                
+                try {
+                    const canvas = this.elements.canvas;
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(this.image, 0, 0);
+                } catch (error) {
+                    console.error('Error dibujando canvas:', error);
+                    showAlert(`Error al dibujar ${this.name}. Intenta reducir el tamaño de la imagen.`, 'danger');
+                }
+            }
+
+            /**
+             * Renderiza las líneas divisorias arrastrables
+             * Usa posiciones en porcentaje para responsiveness
+             */
+            renderLines() {
+                // Remover líneas existentes
+                this.elements.canvasContainer.querySelectorAll('.divider-line').forEach(el => el.remove());
+                
+                // Renderizar líneas verticales (dividen horizontalmente)
+                this.verticalLines.forEach((pos, index) => {
+                    const line = document.createElement('div');
+                    line.className = 'divider-line vertical';
+                    line.style.left = `${pos}%`;
+                    line.dataset.type = 'vertical';
+                    line.dataset.index = index;
+                    line.dataset.id = this.id;
+                    this.elements.canvasContainer.appendChild(line);
+                });
+                
+                // Renderizar líneas horizontales (dividen verticalmente)
+                this.horizontalLines.forEach((pos, index) => {
+                    const line = document.createElement('div');
+                    line.className = 'divider-line horizontal';
+                    line.style.top = `${pos}%`;
+                    line.dataset.type = 'horizontal';
+                    line.dataset.index = index;
+                    line.dataset.id = this.id;
+                    this.elements.canvasContainer.appendChild(line);
+                });
+                
+                // Inicializar drag para nuevas líneas
+                this.initDraggableLines();
+            }
+
+            /**
+             * Inicializa la funcionalidad de arrastre para líneas
+             * Soporte completo táctil: touchstart, touchmove, touchend
+             * Precisión mejorada usando getBoundingClientRect() del canvas
+             */
+            initDraggableLines() {
+                const lines = this.elements.canvasContainer.querySelectorAll('.divider-line');
+                
+                lines.forEach(line => {
+                    let isDragging = false;
+                    let startX = 0;
+                    let startY = 0;
+                    let startPos = 0;
+                    
+                    const type = line.dataset.type;
+                    const index = parseInt(line.dataset.index);
+                    const id = parseInt(line.dataset.id);
+                    
+                    const onDragStart = (e) => {
+                        e.preventDefault();
+                        isDragging = true;
+                        line.classList.add('dragging');
+                        
+                        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                        
+                        // Obtener posición exacta usando getBoundingClientRect del canvas
+                        const rect = this.elements.canvas.getBoundingClientRect();
+                        
+                        if (type === 'vertical') {
+                            startPos = this.verticalLines[index];
+                            startX = clientX;
+                        } else {
+                            startPos = this.horizontalLines[index];
+                            startY = clientY;
+                        }
+                    };
+                    
+                    const onDragMove = (e) => {
+                        if (!isDragging) return;
+                        e.preventDefault();
+                        
+                        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                        
+                        // Calcular nueva posición basada en el rect del canvas
+                        const rect = this.elements.canvas.getBoundingClientRect();
+                        let newPos;
+                        
+                        if (type === 'vertical') {
+                            const deltaX = clientX - startX;
+                            const deltaPercent = (deltaX / rect.width) * 100;
+                            newPos = Math.max(1, Math.min(99, startPos + deltaPercent));
+                            this.verticalLines[index] = newPos;
+                        } else {
+                            const deltaY = clientY - startY;
+                            const deltaPercent = (deltaY / rect.height) * 100;
+                            newPos = Math.max(1, Math.min(99, startPos + deltaPercent));
+                            this.horizontalLines[index] = newPos;
+                        }
+                        
+                        // Actualizar posición de la línea
+                        if (type === 'vertical') {
+                            line.style.left = `${newPos}%`;
+                        } else {
+                            line.style.top = `${newPos}%`;
+                        }
+                        
+                        // Actualizar previews en tiempo real
+                        this.updatePreviews();
+                    };
+                    
+                    const onDragEnd = () => {
+                        if (isDragging) {
+                            isDragging = false;
+                            line.classList.remove('dragging');
+                            // Guardar estado al finalizar el arrastre
+                            this.saveState();
+                        }
+                    };
+                    
+                    // Eventos de ratón
+                    line.addEventListener('mousedown', onDragStart);
+                    
+                    // Eventos táctiles (soporte completo móvil)
+                    line.addEventListener('touchstart', onDragStart, { passive: false });
+                    
+                    // Eventos globales para arrastre
+                    document.addEventListener('mousemove', onDragMove);
+                    document.addEventListener('mouseup', onDragEnd);
+                    document.addEventListener('touchmove', onDragMove, { passive: false });
+                    document.addEventListener('touchend', onDragEnd);
+                    
+                    // Guardar referencias para limpieza
+                    line._dragHandlers = { onDragMove, onDragEnd };
+                });
+            }
+
+            /**
+             * Actualiza los inputs de filas/columnas
+             */
+            updateInputs() {
+                if (this.elements.rowsInput) this.elements.rowsInput.value = this.cols;
+                if (this.elements.colsInput) this.elements.colsInput.value = this.rows;
+            }
+
+            /**
+             * Actualiza los botones de undo/redo
+             */
+            updateUndoRedoButtons() {
+                if (this.elements.undoBtn) {
+                    this.elements.undoBtn.disabled = this.historyIndex <= 0;
+                }
+                if (this.elements.redoBtn) {
+                    this.elements.redoBtn.disabled = this.historyIndex >= this.history.length - 1;
+                }
+            }
+
+            /**
+             * Zoom in
+             */
+            zoomIn() {
+                this.zoom = Math.min(5, this.zoom + 0.25);
+                this.updateZoom();
+            }
+
+            /**
+             * Zoom out
+             */
+            zoomOut() {
+                this.zoom = Math.max(1, this.zoom - 0.25);
+                this.updateZoom();
+            }
+
+            /**
+             * Actualiza el zoom
+             */
+            updateZoom() {
+                this.isZoomed = this.zoom > 1;
+                this.elements.canvas.style.transform = `scale(${this.zoom})`;
+                this.elements.canvas.style.transformOrigin = 'top left';
+                this.elements.previewWrapper.classList.toggle('zoomed', this.isZoomed);
+                this.elements.zoomLevel.textContent = `${Math.round(this.zoom * 100)}%`;
+            }
+
+            /**
+             * Actualiza las vistas previas de las partes
+             * Lazy rendering con IntersectionObserver para optimización
+             */
+            updatePreviews() {
+                if (!this.elements.thumbnailsContainer) return;
+                
+                const parts = this.getParts();
+                const numParts = (this.horizontalLines.length + 1) * (this.verticalLines.length + 1);
+                
+                // Actualizar contador
+                const title = this.elements.thumbnailsContainer.querySelector('h3');
+                if (title) {
+                    title.textContent = `📊 Vista Previa (${numParts} partes)`;
+                }
+                
+                // Limpiar thumbnails
+                this.elements.thumbnailsContainer.innerHTML = '';
+                
+                // Crear thumbnails con lazy rendering
+                parts.forEach((part, index) => {
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = 'thumbnail-item';
+                    
+                    const label = this.getPartLabel(part.row, part.col);
+                    
+                    thumbnail.innerHTML = `
+                        <canvas class="thumbnail-image" id="thumb-${this.id}-${index}"></canvas>
+                        <div class="thumbnail-info">
+                            <div class="thumbnail-label">${label}</div>
+                            <div class="thumbnail-actions">
+                                <button class="btn btn-sm btn-secondary download-part-btn" data-index="${index}">⬇️</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    this.elements.thumbnailsContainer.appendChild(thumbnail);
+                    
+                    // Lazy render con IntersectionObserver
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                this.renderThumbnail(part, index);
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { rootMargin: '50px' });
+                    
+                    observer.observe(thumbnail);
+                });
+                
+                // Event listeners para descargas individuales
+                this.elements.thumbnailsContainer.querySelectorAll('.download-part-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        this.downloadPart(parts[index]);
+                    });
+                });
+            }
+
+            /**
+             * Obtiene todas las partes de la imagen
+             * @returns {Array} Array de partes con coordenadas
+             */
+            getParts() {
+                const parts = [];
+                
+                // Calcular límites
+                const vLimits = [0, ...this.verticalLines, 100];
+                const hLimits = [0, ...this.horizontalLines, 100];
+                
+                // Generar partes
+                for (let row = 0; row < hLimits.length - 1; row++) {
+                    for (let col = 0; col < vLimits.length - 1; col++) {
+                        parts.push({
+                            row: row + 1,
+                            col: col + 1,
+                            x: (vLimits[col] / 100) * this.width,
+                            y: (hLimits[row] / 100) * this.height,
+                            width: ((vLimits[col + 1] - vLimits[col]) / 100) * this.width,
+                            height: ((hLimits[row + 1] - hLimits[row]) / 100) * this.height
+                        });
+                    }
+                }
+                
+                return parts;
+            }
+
+            /**
+             * Genera etiqueta lógica para una parte
+             * Formato: parte-row-col
+             */
+            getPartLabel(row, col) {
+                return `parte-${row}-${col}`;
+            }
+
+            /**
+             * Renderiza un thumbnail de una parte
+             * Libera memoria después de renderizar
+             */
+            renderThumbnail(part, index) {
+                const canvas = document.getElementById(`thumb-${this.id}-${index}`);
+                if (!canvas) return;
+                
+                try {
+                    // Calcular tamaño de thumbnail (máx 100px)
+                    const maxSize = 100;
+                    const scale = Math.min(maxSize / part.width, maxSize / part.height, 1);
+                    
+                    canvas.width = part.width * scale;
+                    canvas.height = part.height * scale;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(
+                        this.image,
+                        part.x, part.y, part.width, part.height,
+                        0, 0, canvas.width, canvas.height
+                    );
+                } catch (error) {
+                    console.error('Error renderizando thumbnail:', error);
+                }
+            }
+
+            /**
+             * Descarga una parte individual
+             */
+            downloadPart(part) {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = part.width;
+                    canvas.height = part.height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(
+                        this.image,
+                        part.x, part.y, part.width, part.height,
+                        0, 0, part.width, part.height
+                    );
+                    
+                    const label = this.getPartLabel(part.row, part.col);
+                    const baseName = this.name.replace(/\.[^/.]+$/, '');
+                    const filename = `${baseName}-${label}.png`;
+                    
+                    canvas.toBlob(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                    
+                } catch (error) {
+                    console.error('Error descargando parte:', error);
+                    showAlert('Error al descargar la parte. La imagen puede ser demasiado grande.', 'danger');
+                }
+            }
+
+            /**
+             * Descarga todas las partes en un ZIP
+             * Usa JSZip para crear ZIP en memoria
+             */
+            async downloadZip() {
+                if (!this.elements.progressContainer) return;
+                
+                this.elements.progressContainer.classList.remove('hidden');
+                this.elements.downloadZipBtn.disabled = true;
+                
+                try {
+                    const parts = this.getParts();
+                    const zip = new JSZip();
+                    const baseName = this.name.replace(/\.[^/.]+$/, '');
+                    
+                    // Generar todas las partes
+                    for (let i = 0; i < parts.length; i++) {
+                        const part = parts[i];
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = part.width;
+                        canvas.height = part.height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(
+                            this.image,
+                            part.x, part.y, part.width, part.height,
+                            0, 0, part.width, part.height
+                        );
+                        
+                        // Convertir a blob y agregar al ZIP
+                        const blob = await new Promise(resolve => {
+                            canvas.toBlob(resolve, 'image/png');
+                        });
+                        
+                        const label = this.getPartLabel(part.row, part.col);
+                        zip.file(`${baseName}-${label}.png`, blob);
+                        
+                        // Liberar canvas
+                        canvas.width = 0;
+                        canvas.height = 0;
+                    }
+                    
+                    // Generar y descargar ZIP
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    const url = URL.createObjectURL(content);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${baseName}-partes.zip`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    showAlert(`✅ ZIP descargado: ${parts.length} partes`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error generando ZIP:', error);
+                    showAlert('Error al generar ZIP. Intenta con imágenes más pequeñas.', 'danger');
+                } finally {
+                    this.elements.progressContainer.classList.add('hidden');
+                    this.elements.downloadZipBtn.disabled = false;
+                }
+            }
+
+            /**
+             * Libera memoria eliminando referencias
+             * Importante para evitar crashes con múltiples imágenes
+             */
+            dispose() {
+                if (this.image) {
+                    this.image.src = '';
+                    this.image = null;
+                }
+                
+                if (this.elements.canvas) {
+                    this.elements.canvas.width = 0;
+                    this.elements.canvas.height = 0;
+                }
+                
+                // Limpiar event listeners de líneas
+                if (this.elements.canvasContainer) {
+                    this.elements.canvasContainer.querySelectorAll('.divider-line').forEach(line => {
+                        if (line._dragHandlers) {
+                            document.removeEventListener('mousemove', line._dragHandlers.onDragMove);
+                            document.removeEventListener('mouseup', line._dragHandlers.onDragEnd);
+                            document.removeEventListener('touchmove', line._dragHandlers.onDragMove);
+                            document.removeEventListener('touchend', line._dragHandlers.onDragEnd);
+                        }
+                    });
+                }
+                
+                this.elements = {};
+            }
+        }
+
+        /* ========================================
+           FUNCIONES DE UTILIDAD
+           ======================================== */
+
+        /**
+         * Muestra una alerta
+         * @param {string} message - Mensaje a mostrar
+         * @param {string} type - Tipo de alerta (info, warning, danger, success)
+         */
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertsContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            
+            let icon = 'ℹ️';
+            if (type === 'warning') icon = '⚠️';
+            if (type === 'danger') icon = '❌';
+            if (type === 'success') icon = '✅';
+            
+            alert.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            
+            container.appendChild(alert);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        /**
+         * Actualiza las acciones globales
+         */
+        function updateGlobalActions() {
+            const container = document.getElementById('globalActions');
+            if (AppState.images.length > 0) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Descarga todas las imágenes en ZIP global
+         * Genera ZIP con prefijos: imagen1-parte-row-col.png
+         */
+        async function downloadAll() {
+            const loadedImages = AppState.images.filter(img => img.isLoaded);
+            if (loadedImages.length === 0) {
+                showAlert('No hay imágenes cargadas para descargar', 'warning');
+                return;
+            }
+            
+            try {
+                const zip = new JSZip();
+                const folder = zip.folder('imagenes-divididas');
+                
+                let totalParts = 0;
+                
+                for (let i = 0; i < loadedImages.length; i++) {
+                    const img = loadedImages[i];
+                    const parts = img.getParts();
+                    const baseName = `imagen${i + 1}`;
+                    
+                    for (let j = 0; j < parts.length; j++) {
+                        const part = parts[j];
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = part.width;
+                        canvas.height = part.height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(
+                            img.image,
+                            part.x, part.y, part.width, part.height,
+                            0, 0, part.width, part.height
+                        );
+                        
+                        const blob = await new Promise(resolve => {
+                            canvas.toBlob(resolve, 'image/png');
+                        });
+                        
+                        const label = img.getPartLabel(part.row, part.col);
+                        folder.file(`${baseName}-${label}.png`, blob);
+                        
+                        // Liberar canvas
+                        canvas.width = 0;
+                        canvas.height = 0;
+                        
+                        totalParts++;
+                    }
+                }
+                
+                // Generar y descargar ZIP
+                const content = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'todas-imagenes-divididas.zip';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showAlert(`✅ ZIP global descargado: ${loadedImages.length} imágenes, ${totalParts} partes`, 'success');
+                
+            } catch (error) {
+                console.error('Error generando ZIP global:', error);
+                showAlert('Error al generar ZIP global. Intenta con menos imágenes.', 'danger');
+            }
+        }
+
+        /**
+         * Aplica configuración de la primera imagen a todas
+         */
+        function applyConfigToAll() {
+            const firstImage = AppState.images.find(img => img.isLoaded);
+            if (!firstImage) {
+                showAlert('No hay imágenes cargadas', 'warning');
+                return;
+            }
+            
+            firstImage.applyConfigToAll();
+        }
+
+        /**
+         * Limpia todas las imágenes
+         * Libera memoria de todas las imágenes cargadas
+         */
+        function clearAll() {
+            if (!confirm('¿Estás seguro de que quieres eliminar todas las imágenes?')) return;
+            
+            AppState.images.forEach(img => img.dispose());
+            AppState.images = [];
+            AppState.nextId = 1;
+            
+            document.getElementById('imagesContainer').innerHTML = '';
+            document.getElementById('alertsContainer').innerHTML = '';
+            updateGlobalActions();
+            
+            showAlert('🗑️ Todas las imágenes han sido eliminadas', 'info');
+        }
+
+        /* ========================================
+           EVENT LISTENERS GLOBALES
+           ======================================== */
+
+        // Carga de archivos
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const selectFilesBtn = document.getElementById('selectFilesBtn');
+
+        selectFilesBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', handleFiles);
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            processFiles(files);
+        });
+
+        /**
+         * Maneja la selección de archivos
+         */
+        function handleFiles(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+            fileInput.value = '';
+        }
+
+        /**
+         * Procesa archivos con validaciones
+         */
+        function processFiles(files) {
+            if (files.length === 0) return;
+            
+            // Verificar límites
+            const oversizedFiles = files.filter(f => f.size > AppState.maxFileSize);
+            if (oversizedFiles.length > 0) {
+                showAlert(
+                    `❌ ${oversizedFiles.length} archivo(s) exceden el límite de 50 MB`,
+                    'danger'
+                );
+                return;
+            }
+            
+            // Advertencia por cantidad
+            if (AppState.images.length + files.length > AppState.warningImageCount) {
+                showAlert(
+                    `⚠️ Cargar muchas imágenes puede causar problemas de memoria. Actual: ${AppState.images.length}, Nuevo: ${files.length}`,
+                    'warning'
+                );
+            }
+            
+            // Advertencia por tamaño total
+            const totalSize = AppState.images.reduce((sum, img) => sum + img.size, 0) +
+                           files.reduce((sum, f) => sum + f.size, 0);
+            if (totalSize > AppState.warningTotalSize) {
+                showAlert(
+                    `⚠️ El tamaño total (${(totalSize / 1024 / 1024).toFixed(0)} MB) excede el recomendado (${AppState.warningTotalSize / 1024 / 1024} MB)`,
+                    'warning'
+                );
+            }
+            
+            // Crear objetos ImageData
+            files.forEach(file => {
+                const imageData = new ImageData(file, AppState.nextId++);
+                AppState.images.push(imageData);
+            });
+            
+            updateGlobalActions();
+            showAlert(`✅ ${files.length} imagen(es) cargada(s)`, 'success');
+        }
+
+        // Botones globales
+        document.getElementById('downloadAllBtn').addEventListener('click', downloadAll);
+        document.getElementById('applyAllBtn').addEventListener('click', applyConfigToAll);
+        document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+
+        // Tutorial modal
+        const tutorialModal = document.getElementById('tutorialModal');
+        const helpBtn = document.getElementById('helpBtn');
+        const closeTutorial = document.getElementById('closeTutorial');
+        const closeTutorialBtn = document.getElementById('closeTutorialBtn');
+        const dontShowAgainBtn = document.getElementById('dontShowAgainBtn');
+
+        function showTutorial() {
+            tutorialModal.classList.remove('hidden');
+        }
+
+        function hideTutorial() {
+            tutorialModal.classList.add('hidden');
+        }
+
+        helpBtn.addEventListener('click', showTutorial);
+        closeTutorial.addEventListener('click', hideTutorial);
+        closeTutorialBtn.addEventListener('click', hideTutorial);
+
+        dontShowAgainBtn.addEventListener('click', () => {
+            localStorage.setItem('imageSplitterTutorialShown', 'true');
+            hideTutorial();
+        });
+
+        tutorialModal.addEventListener('click', (e) => {
+            if (e.target === tutorialModal) {
+                hideTutorial();
+            }
+        });
+
+        // Mostrar tutorial si no se ha mostrado antes
+        if (!localStorage.getItem('imageSplitterTutorialShown')) {
+            setTimeout(showTutorial, 500);
+        }
+
+        /* ========================================
+           INICIALIZACIÓN
+           ======================================== */
+
+        // Mensaje de compatibilidad
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isMobile || isSafari) {
+            showAlert(
+                'ℹ️ Recomendamos usar Chrome o Firefox en desktop para mejor rendimiento. ' +
+                'Móvil y Safari pueden tener limitaciones de tamaño.',
+                'info'
+            );
+        }
+
+        console.log('✂️ Divisor de Imágenes cargado correctamente');
+        console.log('📊 Version 1.0 - 100% Client-Side - Privado y Seguro');
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Divisor de Imágenes Gratuito Online - Múltiples Fotos, Divisiones Independientes o Globales, Automático por Número de Partes</title>
     <meta name="description" content="Divide múltiples imágenes online gratis. Líneas arrastrables, división automática por filas/columnas, descarga ZIP. 100% privado, funciona en tu navegador.">
     <meta name="keywords" content="divisor imágenes, cortar fotos, split image, dividir imagen online, gratis">
@@ -24,8 +24,8 @@
             --warning: #f59e0b;
             --border: #d1d5db;
             --shadow: rgba(0,0,0,0.1);
-            --line-vertical: rgba(37, 99, 235, 0.8);
-            --line-horizontal: rgba(220, 38, 38, 0.8);
+            --line-vertical: rgba(37, 99, 235, 0.9);
+            --line-horizontal: rgba(220, 38, 38, 0.9);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -77,6 +77,8 @@
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
+            /* Prevenir scroll horizontal en móvil durante drag */
+            overflow-x: hidden;
         }
 
         /* ========== HEADER ========== */
@@ -124,6 +126,9 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            /* Mejorar touch en móvil */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .btn-primary {
@@ -308,90 +313,152 @@
 
         .control-group label {
             white-space: nowrap;
+            font-size: 0.75rem;
         }
 
-        /* ========== PREVIEW CONTAINER ========== */
+        /* ========== PREVIEW CONTAINER - CENTRADO ========== */
         .preview-wrapper {
             position: relative;
             overflow: hidden;
             border-radius: 8px;
             background: var(--bg-tertiary);
             margin-bottom: 1rem;
+            /* CENTRAR EL CONTENIDO */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
 
         .preview-container {
             position: relative;
             display: inline-block;
-            max-width: 100%;
             overflow: auto;
-            max-height: 500px;
+            max-height: 600px;
+            /* Prevenir selección de texto durante drag */
+            user-select: none;
+            -webkit-user-select: none;
+            /* Touch action para mejor control */
+            touch-action: none;
         }
 
         .preview-canvas {
             display: block;
-            max-width: 100%;
             height: auto;
-            cursor: crosshair;
+            /* NO usar cursor crosshair, confunde */
+            cursor: default;
         }
 
-        /* ========== LÍNEAS DIVISORAS ========== */
+        /* ========== LÍNEAS DIVISORAS - MEJORADAS PARA TOUCH ========== */
         .split-line {
             position: absolute;
-            background: var(--line-vertical);
             z-index: 10;
-            cursor: pointer;
-            transition: background 0.2s;
+            /* Transiciones suaves */
+            transition: transform 0.1s ease-out;
         }
 
         .split-line.vertical {
-            width: 3px;
+            width: 4px;
             height: 100%;
             top: 0;
             cursor: ew-resize;
             background: var(--line-vertical);
+            /* Área de toque más grande en móvil */
+            touch-action: none;
         }
 
         .split-line.horizontal {
-            height: 3px;
+            height: 4px;
             width: 100%;
             left: 0;
             cursor: ns-resize;
             background: var(--line-horizontal);
+            touch-action: none;
+        }
+
+        /* Área de toque expandida para móvil */
+        .split-line::before {
+            content: '';
+            position: absolute;
+            z-index: -1;
+        }
+
+        .split-line.vertical::before {
+            top: 0;
+            bottom: 0;
+            left: -15px;
+            right: -15px;
+        }
+
+        .split-line.horizontal::before {
+            left: 0;
+            right: 0;
+            top: -15px;
+            bottom: -15px;
         }
 
         .split-line:hover, .split-line.dragging {
-            filter: brightness(1.2);
+            filter: brightness(1.3);
+            transform: scale(1.1);
         }
 
-        .split-line::after {
-            content: '×';
+        .split-line.vertical:hover, .split-line.vertical.dragging {
+            width: 6px;
+            margin-left: -1px;
+        }
+
+        .split-line.horizontal:hover, .split-line.horizontal.dragging {
+            height: 6px;
+            margin-top: -1px;
+        }
+
+        /* Botón de eliminar línea */
+        .line-delete-btn {
             position: absolute;
-            background: rgba(0,0,0,0.7);
+            background: rgba(220, 38, 38, 0.9);
             color: white;
-            font-size: 10px;
-            width: 16px;
-            height: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
             opacity: 0;
             transition: opacity 0.2s;
-            cursor: pointer;
+            border: 2px solid white;
+            z-index: 15;
+            /* Touch friendly */
+            touch-action: manipulation;
         }
 
-        .split-line.vertical::after {
-            top: 5px;
-            left: -6px;
-        }
-
-        .split-line.horizontal::after {
-            left: 5px;
-            top: -6px;
-        }
-
-        .split-line:hover::after {
+        .split-line:hover .line-delete-btn,
+        .split-line.dragging .line-delete-btn,
+        .split-line:active .line-delete-btn {
             opacity: 1;
+        }
+
+        /* Siempre visible en móvil */
+        @media (max-width: 768px) {
+            .line-delete-btn {
+                opacity: 1;
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+        }
+
+        .split-line.vertical .line-delete-btn {
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .split-line.horizontal .line-delete-btn {
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         /* ========== THUMBNAILS DE PARTES ========== */
@@ -421,14 +488,15 @@
             aspect-ratio: 1;
             overflow: hidden;
             border-radius: 4px;
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
         }
 
         .part-thumbnail:hover {
             transform: scale(1.05);
             z-index: 5;
+            border-color: var(--accent);
         }
 
         .part-thumbnail canvas {
@@ -443,7 +511,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             color: white;
             font-size: 0.625rem;
             padding: 2px 4px;
@@ -458,9 +526,9 @@
             color: white;
             border: none;
             border-radius: 3px;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
             cursor: pointer;
             opacity: 0;
             transition: opacity 0.2s;
@@ -521,6 +589,12 @@
         .modal h2 {
             margin-bottom: 1rem;
             color: var(--accent);
+        }
+
+        .modal h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
         }
 
         .modal p, .modal li {
@@ -623,6 +697,19 @@
             .parts-grid {
                 grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
             }
+
+            .control-group label {
+                font-size: 0.65rem;
+            }
+
+            input[type="number"] {
+                width: 50px;
+                padding: 0.3rem 0.4rem;
+            }
+
+            .preview-container {
+                max-height: 400px;
+            }
         }
 
         /* ========== FOOTER ========== */
@@ -657,6 +744,18 @@
             flex-wrap: wrap;
             gap: 1rem;
             align-items: center;
+        }
+
+        .global-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        /* Indicador visual de línea activa */
+        .split-line.active {
+            z-index: 100;
         }
     </style>
 </head>
@@ -699,11 +798,11 @@
         <div class="global-controls hidden" id="globalControls">
             <div class="global-left">
                 <div class="control-group">
-                    <label>Horizontal de forma global:</label>
+                    <label>Dividir Horizontalmente:</label>
                     <input type="number" id="globalRows" value="1" min="1" max="50">
                 </div>
                 <div class="control-group">
-                    <label>Vertical de forma global:</label>
+                    <label>Dividir Verticalmente:</label>
                     <input type="number" id="globalCols" value="1" min="1" max="50">
                 </div>
                 <button class="btn btn-primary btn-small" id="applyGlobalBtn">Aplicar a todas</button>
@@ -721,7 +820,7 @@
     <!-- ========== FOOTER ========== -->
     <footer>
         <p>Divisor de Imágenes Gratuito | 100% privado - Todo se procesa en tu navegador | Sin servidores externos</p>
-        <p>Compatible con Chrome, Firefox, Edge y Safari</p>
+        <p>Compatible con Chrome, Firefox, Edge y Safari (escritorio y móvil)</p>
     </footer>
 
     <!-- ========== MODAL TUTORIAL ========== -->
@@ -733,22 +832,22 @@
             <h3>📌 Cómo usar:</h3>
             <ul>
                 <li><strong>Cargar:</strong> Arrastra imágenes o usa el botón de selección.</li>
-                <li><strong>Configurar:</strong> Ajusta Vertical y Horizontal para cada imagen. Las líneas se generan automáticamente.</li>
-                <li><strong>Ajustar:</strong> Arrastra las líneas divisoras para ajustes precisos.</li>
-                <li><strong>Eliminar línea:</strong> Haz clic en la × que aparece al pasar sobre una línea.</li>
+                <li><strong>Configurar:</strong> Ajusta "Dividir Horizontalmente" y "Dividir Verticalmente" para cada imagen.</li>
+                <li><strong>Ajustar:</strong> Arrastra las líneas divisoras para ajustes precisos (funciona en móvil).</li>
+                <li><strong>Eliminar línea:</strong> Toca/haz clic en el botón ✕ rojo de cada línea.</li>
                 <li><strong>Global:</strong> Usa "Aplicar a todas" para copiar la configuración a todas las imágenes.</li>
                 <li><strong>Descargar:</strong> Descarga partes individuales o todo en ZIP.</li>
             </ul>
 
             <h3>🎨 Colores de líneas:</h3>
             <ul>
-                <li><span style="color: var(--line-vertical);">■</span> Azul = Líneas verticales (columnas)</li>
-                <li><span style="color: var(--line-horizontal);">■</span> Rojo = Líneas horizontales (filas)</li>
+                <li><span style="color: #2563eb; font-weight: bold;">■ Azul</span> = Líneas verticales (división vertical)</li>
+                <li><span style="color: #dc2626; font-weight: bold;">■ Rojo</span> = Líneas horizontales (división horizontal)</li>
             </ul>
 
-            <h3>⚡ Atajos:</h3>
+            <h3>⚡ Atajos (escritorio):</h3>
             <ul>
-                <li><strong>Ctrl+Z:</strong> Deshacer (por imagen activa)</li>
+                <li><strong>Ctrl+Z:</strong> Deshacer</li>
                 <li><strong>Ctrl+Y:</strong> Rehacer</li>
             </ul>
 
@@ -760,57 +859,38 @@
     <script>
     /**
      * =========================================================================
-     * DIVISOR DE IMÁGENES AVANZADO
+     * DIVISOR DE IMÁGENES AVANZADO - VERSIÓN CORREGIDA
      * =========================================================================
      * 
-     * ARQUITECTURA:
-     * - Cada imagen tiene su propio estado independiente (líneas, zoom, historial)
-     * - Las líneas se generan automáticamente basándose en Vertical/Horizontal
-     * - Sistema de undo/redo por imagen
-     * - ZIP generado 100% client-side sin librerías externas
+     * CORRECCIONES APLICADAS:
+     * 1. Soporte táctil completo para arrastrar líneas en móvil
+     * 2. Cálculo de posiciones 100% preciso usando getBoundingClientRect
+     * 3. Etiquetas más claras: "Dividir Horizontalmente/Verticalmente"
+     * 4. Imágenes centradas en el contenedor
      * 
-     * MANEJO DE MEMORIA:
-     * - Lazy rendering con IntersectionObserver
-     * - Liberación de recursos cuando se elimina una imagen
-     * - Canvas de preview escalado para evitar OOM
-     * - Advertencias para imágenes muy grandes
+     * ARQUITECTURA:
+     * - Cada imagen tiene su propio estado independiente
+     * - Las líneas usan posiciones en % para precisión perfecta
+     * - Sistema de undo/redo por imagen
+     * - ZIP generado 100% client-side
      * 
      * =========================================================================
      */
 
     // ========== ESTADO GLOBAL ==========
     const state = {
-        images: new Map(), // Map<id, ImageData>
+        images: new Map(),
         nextId: 1,
         activeImageId: null,
-        tutorialShown: localStorage.getItem('tutorialShown') === 'true'
+        tutorialShown: localStorage.getItem('tutorialShown') === 'true',
+        // Para tracking de drag activo
+        activeDrag: null
     };
 
-    /**
-     * Estructura de datos por imagen:
-     * {
-     *   id: number,
-     *   file: File,
-     *   name: string,
-     *   width: number,
-     *   height: number,
-     *   originalImage: HTMLImageElement,
-     *   rows: number,
-     *   cols: number,
-     *   verticalLines: number[], // posiciones en % (0-100)
-     *   horizontalLines: number[],
-     *   zoom: number,
-     *   pan: {x, y},
-     *   history: Array<{vertical: [], horizontal: []}>,
-     *   historyIndex: number,
-     *   element: HTMLElement
-     * }
-     */
-
     // ========== CONSTANTES ==========
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+    const MAX_FILE_SIZE = 50 * 1024 * 1024;
     const WARN_FILE_COUNT = 5;
-    const WARN_TOTAL_SIZE = 200 * 1024 * 1024; // 200 MB
+    const WARN_TOTAL_SIZE = 200 * 1024 * 1024;
     const MAX_DIMENSION = 30000;
     const PREVIEW_MAX_WIDTH = 1200;
     const PREVIEW_MAX_HEIGHT = 800;
@@ -822,7 +902,94 @@
         initGlobalControls();
         initTutorial();
         initKeyboardShortcuts();
+        initGlobalTouchHandlers();
     });
+
+    /**
+     * MANEJADORES GLOBALES DE TOUCH/MOUSE
+     * ====================================
+     * Para que el arrastre funcione correctamente en móvil,
+     * necesitamos manejar los eventos a nivel de documento.
+     */
+    function initGlobalTouchHandlers() {
+        // Prevenir scroll durante drag
+        document.addEventListener('touchmove', (e) => {
+            if (state.activeDrag) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Terminar drag en cualquier touchend/mouseup
+        document.addEventListener('touchend', handleGlobalDragEnd);
+        document.addEventListener('touchcancel', handleGlobalDragEnd);
+        document.addEventListener('mouseup', handleGlobalDragEnd);
+
+        // Mover línea durante drag
+        document.addEventListener('touchmove', handleGlobalDragMove, { passive: false });
+        document.addEventListener('mousemove', handleGlobalDragMove);
+    }
+
+    function handleGlobalDragEnd() {
+        if (state.activeDrag) {
+            const { imageData, line } = state.activeDrag;
+            line.classList.remove('dragging');
+            saveToHistory(imageData);
+            state.activeDrag = null;
+        }
+    }
+
+    /**
+     * MANEJO DEL MOVIMIENTO DE LÍNEA - PRECISIÓN 100%
+     * ================================================
+     * El cálculo usa getBoundingClientRect del CANVAS (no del container)
+     * para obtener las coordenadas exactas del área de la imagen.
+     */
+    function handleGlobalDragMove(e) {
+        if (!state.activeDrag) return;
+
+        const { imageData, type, index, line } = state.activeDrag;
+        
+        // Obtener posición del puntero (touch o mouse)
+        let clientX, clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // IMPORTANTE: Usar el canvas como referencia, no el container
+        const canvas = imageData.element.querySelector('.preview-canvas');
+        const rect = canvas.getBoundingClientRect();
+
+        let newPercent;
+
+        if (type === 'vertical') {
+            // Calcular posición X relativa al canvas
+            const relativeX = clientX - rect.left;
+            newPercent = (relativeX / rect.width) * 100;
+        } else {
+            // Calcular posición Y relativa al canvas
+            const relativeY = clientY - rect.top;
+            newPercent = (relativeY / rect.height) * 100;
+        }
+
+        // Limitar entre 1% y 99%
+        newPercent = Math.max(1, Math.min(99, newPercent));
+
+        // Actualizar posición
+        if (type === 'vertical') {
+            line.style.left = `${newPercent}%`;
+            imageData.verticalLines[index] = newPercent;
+        } else {
+            line.style.top = `${newPercent}%`;
+            imageData.horizontalLines[index] = newPercent;
+        }
+
+        // Actualizar preview en tiempo real
+        updatePartsPreview(imageData);
+    }
 
     // ========== TEMA ==========
     function initTheme() {
@@ -891,7 +1058,6 @@
         const zone = document.getElementById('uploadZone');
         const input = document.getElementById('fileInput');
 
-        // Drag & drop
         zone.addEventListener('dragover', (e) => {
             e.preventDefault();
             zone.classList.add('dragover');
@@ -907,19 +1073,12 @@
             handleFiles(e.dataTransfer.files);
         });
 
-        // Click para seleccionar
         input.addEventListener('change', (e) => {
             handleFiles(e.target.files);
-            input.value = ''; // Reset para permitir re-selección
+            input.value = '';
         });
     }
 
-    /**
-     * Procesa archivos cargados
-     * - Valida tamaños y cantidad
-     * - Muestra advertencias si es necesario
-     * - Carga cada imagen válida
-     */
     async function handleFiles(fileList) {
         const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
         
@@ -928,12 +1087,11 @@
             return;
         }
 
-        // Validaciones
         const totalSize = files.reduce((sum, f) => sum + f.size, 0);
         const oversizedFiles = files.filter(f => f.size > MAX_FILE_SIZE);
 
         if (oversizedFiles.length > 0) {
-            showAlert(`${oversizedFiles.length} archivo(s) superan 50 MB y serán omitidos: ${oversizedFiles.map(f => f.name).join(', ')}`, 'danger');
+            showAlert(`${oversizedFiles.length} archivo(s) superan 50 MB y serán omitidos`, 'danger');
         }
 
         if (files.length > WARN_FILE_COUNT) {
@@ -944,7 +1102,6 @@
             showAlert(`Tamaño total: ${(totalSize / 1024 / 1024).toFixed(1)} MB. Puede afectar el rendimiento.`, 'warning');
         }
 
-        // Procesar archivos válidos
         const validFiles = files.filter(f => f.size <= MAX_FILE_SIZE);
         
         for (const file of validFiles) {
@@ -954,25 +1111,16 @@
         updateGlobalControlsVisibility();
     }
 
-    /**
-     * Carga una imagen individual
-     * - Crea elemento Image
-     * - Valida dimensiones
-     * - Inicializa estado
-     * - Renderiza UI
-     */
     async function loadImage(file) {
         return new Promise((resolve) => {
             const img = new Image();
             const id = state.nextId++;
 
             img.onload = () => {
-                // Validar dimensiones
                 if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
-                    showAlert(`"${file.name}" tiene dimensiones muy grandes (${img.width}x${img.height}). Puede causar problemas.`, 'warning');
+                    showAlert(`"${file.name}" tiene dimensiones muy grandes (${img.width}x${img.height}).`, 'warning');
                 }
 
-                // Crear estado de imagen
                 const imageData = {
                     id,
                     file,
@@ -986,7 +1134,7 @@
                     horizontalLines: [],
                     zoom: 1,
                     pan: { x: 0, y: 0 },
-                    history: [{ vertical: [], horizontal: [] }],
+                    history: [{ vertical: [], horizontal: [], rows: 1, cols: 1 }],
                     historyIndex: 0,
                     element: null
                 };
@@ -1005,7 +1153,7 @@
         });
     }
 
-    // ========== RENDERIZADO DE SECCIÓN DE IMAGEN ==========
+    // ========== RENDERIZADO ==========
     function renderImageSection(imageData) {
         const container = document.getElementById('images-container');
         
@@ -1013,6 +1161,7 @@
         section.className = 'image-section';
         section.dataset.imageId = imageData.id;
         
+        // ETIQUETAS CAMBIADAS: "Dividir Horizontalmente" y "Dividir Verticalmente"
         section.innerHTML = `
             <div class="image-header">
                 <div class="image-info">
@@ -1021,12 +1170,12 @@
                 </div>
                 <div class="image-controls">
                     <div class="control-group">
-                        <label>Filas:</label>
-                        <input type="number" class="rows-input" value="${imageData.rows}" min="1" max="50">
+                        <label>Div. Horizontal:</label>
+                        <input type="number" class="rows-input" value="${imageData.rows}" min="1" max="50" title="Número de partes horizontales">
                     </div>
                     <div class="control-group">
-                        <label>Columnas:</label>
-                        <input type="number" class="cols-input" value="${imageData.cols}" min="1" max="50">
+                        <label>Div. Vertical:</label>
+                        <input type="number" class="cols-input" value="${imageData.cols}" min="1" max="50" title="Número de partes verticales">
                     </div>
                     <button class="btn btn-secondary btn-small apply-config-btn" title="Aplicar esta configuración a todas">📋 A todas</button>
                     <div class="history-controls">
@@ -1063,25 +1212,15 @@
         container.appendChild(section);
         imageData.element = section;
 
-        // Renderizar canvas
         renderPreviewCanvas(imageData);
-
-        // Configurar eventos
         setupImageEvents(imageData, section);
-
-        // Lazy loading con IntersectionObserver
         setupLazyLoading(imageData, section);
     }
 
-    /**
-     * Renderiza el canvas de preview con la imagen escalada
-     * para evitar problemas de memoria con imágenes muy grandes
-     */
     function renderPreviewCanvas(imageData) {
         const canvas = imageData.element.querySelector('.preview-canvas');
         const ctx = canvas.getContext('2d');
 
-        // Calcular escala para preview
         let scale = 1;
         if (imageData.width > PREVIEW_MAX_WIDTH) {
             scale = PREVIEW_MAX_WIDTH / imageData.width;
@@ -1098,7 +1237,6 @@
         canvas.style.width = displayWidth + 'px';
         canvas.style.height = displayHeight + 'px';
 
-        // Guardar escala para calcular posiciones de líneas
         imageData.displayScale = scale;
         imageData.displayWidth = displayWidth;
         imageData.displayHeight = displayHeight;
@@ -1107,18 +1245,13 @@
             ctx.drawImage(imageData.originalImage, 0, 0, displayWidth, displayHeight);
         } catch (e) {
             console.error('Error al dibujar imagen:', e);
-            showAlert(`Error al renderizar "${imageData.name}". La imagen puede ser demasiado grande.`, 'danger');
+            showAlert(`Error al renderizar "${imageData.name}".`, 'danger');
         }
 
-        // Renderizar líneas
         renderLines(imageData);
-        // Actualizar preview de partes
         updatePartsPreview(imageData);
     }
 
-    /**
-     * Configura todos los eventos de una sección de imagen
-     */
     function setupImageEvents(imageData, section) {
         const rowsInput = section.querySelector('.rows-input');
         const colsInput = section.querySelector('.cols-input');
@@ -1132,15 +1265,9 @@
         const downloadZipBtn = section.querySelector('.download-zip-btn');
 
         /**
-         * GENERACIÓN AUTOMÁTICA DE LÍNEAS POR FILAS/COLUMNAS
-         * =====================================================
-         * Cuando el usuario cambia el número de filas o columnas,
-         * generamos líneas divisoras uniformemente distribuidas.
-         * 
-         * Para N filas, necesitamos N-1 líneas horizontales.
-         * Posiciones: 100/N, 200/N, ..., (N-1)*100/N
-         * 
-         * Ejemplo: 4 filas → 3 líneas en 25%, 50%, 75%
+         * GENERACIÓN AUTOMÁTICA DE LÍNEAS
+         * Para N divisiones, necesitamos N-1 líneas
+         * Posiciones uniformes: 100/N, 200/N, ..., (N-1)*100/N
          */
         const updateLines = () => {
             const rows = parseInt(rowsInput.value) || 1;
@@ -1152,22 +1279,19 @@
             rowsInput.value = imageData.rows;
             colsInput.value = imageData.cols;
 
-            // Generar líneas horizontales (para filas)
+            // Líneas horizontales para división horizontal
             imageData.horizontalLines = [];
             for (let i = 1; i < imageData.rows; i++) {
                 imageData.horizontalLines.push((i / imageData.rows) * 100);
             }
 
-            // Generar líneas verticales (para columnas)
+            // Líneas verticales para división vertical
             imageData.verticalLines = [];
             for (let i = 1; i < imageData.cols; i++) {
                 imageData.verticalLines.push((i / imageData.cols) * 100);
             }
 
-            // Guardar en historial
             saveToHistory(imageData);
-
-            // Re-renderizar
             renderLines(imageData);
             updatePartsPreview(imageData);
         };
@@ -1175,12 +1299,7 @@
         rowsInput.addEventListener('change', updateLines);
         colsInput.addEventListener('change', updateLines);
 
-        /**
-         * MODO GLOBAL: Aplicar configuración a todas las imágenes
-         * ========================================================
-         * Copia las filas, columnas y posiciones de líneas actuales
-         * a todas las demás imágenes cargadas.
-         */
+        // Aplicar a todas
         applyConfigBtn.addEventListener('click', () => {
             state.images.forEach((otherImage) => {
                 if (otherImage.id === imageData.id) return;
@@ -1190,7 +1309,6 @@
                 otherImage.verticalLines = [...imageData.verticalLines];
                 otherImage.horizontalLines = [...imageData.horizontalLines];
 
-                // Actualizar UI
                 const otherSection = otherImage.element;
                 otherSection.querySelector('.rows-input').value = otherImage.rows;
                 otherSection.querySelector('.cols-input').value = otherImage.cols;
@@ -1203,29 +1321,23 @@
             showAlert('Configuración aplicada a todas las imágenes', 'info');
         });
 
-        // Undo/Redo
         undoBtn.addEventListener('click', () => undo(imageData));
         redoBtn.addEventListener('click', () => redo(imageData));
 
-        // Zoom
         zoomInBtn.addEventListener('click', () => setZoom(imageData, imageData.zoom * 1.25));
         zoomOutBtn.addEventListener('click', () => setZoom(imageData, imageData.zoom / 1.25));
         zoomFitBtn.addEventListener('click', () => setZoom(imageData, 1));
 
-        // Eliminar imagen
         removeBtn.addEventListener('click', () => removeImage(imageData.id));
-
-        // Descargar ZIP de esta imagen
         downloadZipBtn.addEventListener('click', () => downloadImageZip(imageData));
 
-        // Focus para atajos de teclado
         section.addEventListener('click', () => {
             state.activeImageId = imageData.id;
         });
     }
 
     /**
-     * Renderiza las líneas divisoras sobre el canvas
+     * RENDERIZAR LÍNEAS DIVISORAS
      */
     function renderLines(imageData) {
         const container = imageData.element.querySelector('.preview-container');
@@ -1233,13 +1345,13 @@
         // Eliminar líneas existentes
         container.querySelectorAll('.split-line').forEach(el => el.remove());
 
-        // Renderizar líneas verticales
+        // Renderizar líneas verticales (azules)
         imageData.verticalLines.forEach((pos, index) => {
             const line = createLine('vertical', pos, imageData, index);
             container.appendChild(line);
         });
 
-        // Renderizar líneas horizontales
+        // Renderizar líneas horizontales (rojas)
         imageData.horizontalLines.forEach((pos, index) => {
             const line = createLine('horizontal', pos, imageData, index);
             container.appendChild(line);
@@ -1247,7 +1359,10 @@
     }
 
     /**
-     * Crea un elemento de línea divisora arrastrable
+     * CREAR LÍNEA ARRASTRABLE - COMPATIBLE CON TOUCH Y MOUSE
+     * =======================================================
+     * La línea usa posición en % para que sea independiente del zoom.
+     * El área de toque está expandida con ::before para mejor UX en móvil.
      */
     function createLine(type, position, imageData, index) {
         const line = document.createElement('div');
@@ -1255,90 +1370,60 @@
         line.dataset.index = index;
         line.dataset.type = type;
 
+        // Posición inicial precisa en %
         if (type === 'vertical') {
             line.style.left = `${position}%`;
         } else {
             line.style.top = `${position}%`;
         }
 
-        // Arrastrar línea
-        let isDragging = false;
-        let startPos = 0;
-        let startPercent = position;
+        // Botón de eliminar
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'line-delete-btn';
+        deleteBtn.innerHTML = '✕';
+        deleteBtn.title = 'Eliminar línea';
+        line.appendChild(deleteBtn);
 
-        const onMouseDown = (e) => {
-            if (e.target === line.querySelector('::after') || e.offsetX < 0 || e.offsetY < 0) {
-                // Click en el botón de eliminar
-                return;
-            }
-            isDragging = true;
-            line.classList.add('dragging');
-            startPos = type === 'vertical' ? e.clientX : e.clientY;
-            startPercent = position;
+        // Evento de eliminar (touch y click)
+        const handleDelete = (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            removeLine(imageData, type, index);
+        };
+        deleteBtn.addEventListener('click', handleDelete);
+        deleteBtn.addEventListener('touchend', handleDelete);
+
+        /**
+         * INICIO DE ARRASTRE - TOUCH Y MOUSE
+         */
+        const startDrag = (e) => {
+            // Ignorar si es el botón de eliminar
+            if (e.target === deleteBtn) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            line.classList.add('dragging');
+            state.activeImageId = imageData.id;
+
+            // Guardar estado de drag activo
+            state.activeDrag = {
+                imageData,
+                type,
+                index,
+                line
+            };
         };
 
-        const onMouseMove = (e) => {
-            if (!isDragging) return;
-
-            const container = imageData.element.querySelector('.preview-container');
-            const rect = container.getBoundingClientRect();
-            
-            let newPercent;
-            if (type === 'vertical') {
-                const delta = e.clientX - startPos;
-                const deltaPercent = (delta / rect.width) * 100;
-                newPercent = startPercent + deltaPercent;
-            } else {
-                const delta = e.clientY - startPos;
-                const deltaPercent = (delta / rect.height) * 100;
-                newPercent = startPercent + deltaPercent;
-            }
-
-            // Limitar entre 0.5% y 99.5%
-            newPercent = Math.max(0.5, Math.min(99.5, newPercent));
-
-            if (type === 'vertical') {
-                line.style.left = `${newPercent}%`;
-                imageData.verticalLines[index] = newPercent;
-            } else {
-                line.style.top = `${newPercent}%`;
-                imageData.horizontalLines[index] = newPercent;
-            }
-
-            updatePartsPreview(imageData);
-        };
-
-        const onMouseUp = () => {
-            if (isDragging) {
-                isDragging = false;
-                line.classList.remove('dragging');
-                saveToHistory(imageData);
-            }
-        };
-
-        line.addEventListener('mousedown', onMouseDown);
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-
-        // Click en × para eliminar línea
-        line.addEventListener('click', (e) => {
-            const rect = line.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            // Si el click es cerca del icono × (esquina)
-            if ((type === 'vertical' && clickY < 20 && clickX < 10) ||
-                (type === 'horizontal' && clickX < 20 && clickY < 10)) {
-                removeLine(imageData, type, index);
-            }
-        });
+        // Event listeners para iniciar drag
+        line.addEventListener('mousedown', startDrag);
+        line.addEventListener('touchstart', startDrag, { passive: false });
 
         return line;
     }
 
     /**
-     * Elimina una línea divisora
+     * ELIMINAR LÍNEA
      */
     function removeLine(imageData, type, index) {
         if (type === 'vertical') {
@@ -1357,10 +1442,7 @@
     }
 
     /**
-     * ACTUALIZA LA VISTA PREVIA DE PARTES
-     * ====================================
-     * Calcula las regiones basándose en las posiciones de líneas
-     * y genera thumbnails de cada parte.
+     * ACTUALIZAR VISTA PREVIA DE PARTES
      */
     function updatePartsPreview(imageData) {
         const partsGrid = imageData.element.querySelector('.parts-grid');
@@ -1368,7 +1450,6 @@
         
         partsGrid.innerHTML = '';
 
-        // Calcular regiones
         const regions = calculateRegions(imageData);
         partsCount.textContent = `${regions.length} parte${regions.length !== 1 ? 's' : ''}`;
 
@@ -1379,16 +1460,15 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Tamaño del thumbnail
             const thumbSize = 80;
             const aspectRatio = region.width / region.height;
             
             if (aspectRatio > 1) {
                 canvas.width = thumbSize;
-                canvas.height = thumbSize / aspectRatio;
+                canvas.height = Math.max(1, thumbSize / aspectRatio);
             } else {
                 canvas.height = thumbSize;
-                canvas.width = thumbSize * aspectRatio;
+                canvas.width = Math.max(1, thumbSize * aspectRatio);
             }
 
             try {
@@ -1423,38 +1503,42 @@
     }
 
     /**
-     * CALCULA LAS REGIONES DE CORTE
-     * ==============================
-     * Basándose en las posiciones de líneas (en %), calcula
-     * las coordenadas absolutas de cada parte en píxeles.
+     * CALCULAR REGIONES DE CORTE - PRECISIÓN 100%
+     * ============================================
+     * Las líneas están en % (0-100), convertimos a píxeles
+     * usando el tamaño original de la imagen.
      */
     function calculateRegions(imageData) {
         const regions = [];
         
-        // Ordenar líneas
-        const vLines = [0, ...imageData.verticalLines.sort((a, b) => a - b), 100];
-        const hLines = [0, ...imageData.horizontalLines.sort((a, b) => a - b), 100];
+        // Ordenar líneas y añadir bordes (0% y 100%)
+        const vLines = [0, ...imageData.verticalLines.slice().sort((a, b) => a - b), 100];
+        const hLines = [0, ...imageData.horizontalLines.slice().sort((a, b) => a - b), 100];
 
         for (let row = 0; row < hLines.length - 1; row++) {
             for (let col = 0; col < vLines.length - 1; col++) {
+                // Convertir % a píxeles con precisión
                 const x = Math.round((vLines[col] / 100) * imageData.width);
                 const y = Math.round((hLines[row] / 100) * imageData.height);
-                const width = Math.round(((vLines[col + 1] - vLines[col]) / 100) * imageData.width);
-                const height = Math.round(((hLines[row + 1] - hLines[row]) / 100) * imageData.height);
+                const x2 = Math.round((vLines[col + 1] / 100) * imageData.width);
+                const y2 = Math.round((hLines[row + 1] / 100) * imageData.height);
+                
+                const width = x2 - x;
+                const height = y2 - y;
 
-                regions.push({ x, y, width, height, row, col });
+                if (width > 0 && height > 0) {
+                    regions.push({ x, y, width, height, row, col });
+                }
             }
         }
 
         return regions;
     }
 
-    // ========== HISTORIAL UNDO/REDO ==========
+    // ========== HISTORIAL ==========
     function saveToHistory(imageData) {
-        // Truncar historial si estamos en medio
         imageData.history = imageData.history.slice(0, imageData.historyIndex + 1);
         
-        // Guardar estado actual
         imageData.history.push({
             vertical: [...imageData.verticalLines],
             horizontal: [...imageData.horizontalLines],
@@ -1464,7 +1548,6 @@
         
         imageData.historyIndex = imageData.history.length - 1;
 
-        // Limitar historial a 50 estados para no consumir mucha memoria
         if (imageData.history.length > 50) {
             imageData.history.shift();
             imageData.historyIndex--;
@@ -1486,13 +1569,12 @@
     }
 
     function applyHistoryState(imageData) {
-        const state = imageData.history[imageData.historyIndex];
-        imageData.verticalLines = [...state.vertical];
-        imageData.horizontalLines = [...state.horizontal];
-        imageData.rows = state.rows;
-        imageData.cols = state.cols;
+        const histState = imageData.history[imageData.historyIndex];
+        imageData.verticalLines = [...histState.vertical];
+        imageData.horizontalLines = [...histState.horizontal];
+        imageData.rows = histState.rows;
+        imageData.cols = histState.cols;
 
-        // Actualizar UI
         imageData.element.querySelector('.rows-input').value = imageData.rows;
         imageData.element.querySelector('.cols-input').value = imageData.cols;
 
@@ -1505,47 +1587,31 @@
         imageData.zoom = Math.max(0.25, Math.min(4, newZoom));
         
         const canvas = imageData.element.querySelector('.preview-canvas');
-        const container = imageData.element.querySelector('.preview-container');
         
         canvas.style.transform = `scale(${imageData.zoom})`;
         canvas.style.transformOrigin = 'top left';
         
-        // Actualizar display de zoom
         const zoomLevel = imageData.element.querySelector('.zoom-level');
         zoomLevel.textContent = `${Math.round(imageData.zoom * 100)}%`;
     }
 
     // ========== ELIMINAR IMAGEN ==========
-    /**
-     * LIBERACIÓN DE MEMORIA
-     * ======================
-     * Al eliminar una imagen, liberamos:
-     * - Referencia al objeto Image original
-     * - URL blob creada
-     * - Elementos DOM
-     * - Estado en el Map
-     */
     function removeImage(id) {
         const imageData = state.images.get(id);
         if (!imageData) return;
 
-        // Liberar URL del blob
         if (imageData.originalImage && imageData.originalImage.src) {
             URL.revokeObjectURL(imageData.originalImage.src);
         }
 
-        // Limpiar referencias
         imageData.originalImage = null;
         imageData.history = null;
 
-        // Eliminar del DOM
         if (imageData.element) {
             imageData.element.remove();
         }
 
-        // Eliminar del estado
         state.images.delete(id);
-
         updateGlobalControlsVisibility();
     }
 
@@ -1565,7 +1631,6 @@
                 imageData.rows = rows;
                 imageData.cols = cols;
 
-                // Generar líneas
                 imageData.horizontalLines = [];
                 for (let i = 1; i < rows; i++) {
                     imageData.horizontalLines.push((i / rows) * 100);
@@ -1576,7 +1641,6 @@
                     imageData.verticalLines.push((i / cols) * 100);
                 }
 
-                // Actualizar UI
                 imageData.element.querySelector('.rows-input').value = rows;
                 imageData.element.querySelector('.cols-input').value = cols;
 
@@ -1585,7 +1649,7 @@
                 updatePartsPreview(imageData);
             });
 
-            showAlert(`Configuración ${rows}×${cols} aplicada a todas las imágenes`, 'info');
+            showAlert(`División ${rows}×${cols} aplicada a todas las imágenes`, 'info');
         });
 
         downloadAllBtn.addEventListener('click', downloadAllZip);
@@ -1607,8 +1671,7 @@
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // Ya está renderizado, pero podemos optimizar aquí
-                    // Para imágenes muy grandes, podríamos renderizar solo cuando sea visible
+                    // Imagen visible
                 }
             });
         }, { threshold: 0.1 });
@@ -1617,10 +1680,6 @@
     }
 
     // ========== DESCARGAS ==========
-
-    /**
-     * Descarga una parte individual
-     */
     function downloadPart(imageData, region) {
         const canvas = document.createElement('canvas');
         canvas.width = region.width;
@@ -1640,16 +1699,10 @@
                 downloadBlob(blob, filename);
             }, 'image/png');
         } catch (e) {
-            showAlert('Error al generar la parte. La imagen puede ser demasiado grande.', 'danger');
+            showAlert('Error al generar la parte.', 'danger');
         }
     }
 
-    /**
-     * DESCARGA ZIP DE UNA IMAGEN
-     * ===========================
-     * Genera un ZIP con todas las partes de una imagen.
-     * Usa implementación vanilla de ZIP sin librerías.
-     */
     async function downloadImageZip(imageData) {
         const overlay = imageData.element.querySelector('.progress-overlay');
         overlay.classList.remove('hidden');
@@ -1691,12 +1744,6 @@
         }
     }
 
-    /**
-     * DESCARGA ZIP GLOBAL
-     * ====================
-     * Genera un ZIP con todas las partes de todas las imágenes.
-     * Los archivos se nombran con prefijo de imagen.
-     */
     async function downloadAllZip() {
         if (state.images.size === 0) return;
 
@@ -1746,65 +1793,54 @@
 
     /**
      * IMPLEMENTACIÓN VANILLA DE ZIP
-     * ==============================
-     * Crea un archivo ZIP válido sin librerías externas.
-     * Usa el formato ZIP sin compresión (STORE) para simplicidad.
-     * 
-     * Estructura ZIP:
-     * - Local file headers + datos para cada archivo
-     * - Central directory con metadatos
-     * - End of central directory record
      */
     function createZip(files) {
         const localHeaders = [];
         const centralHeaders = [];
         let offset = 0;
 
-        // Generar headers y datos
         files.forEach(file => {
             const nameBytes = new TextEncoder().encode(file.name);
             const data = file.data;
 
-            // Local file header (30 bytes + nombre + datos)
             const localHeader = new Uint8Array(30 + nameBytes.length);
             const localView = new DataView(localHeader.buffer);
 
-            localView.setUint32(0, 0x04034b50, true); // Signature
-            localView.setUint16(4, 20, true); // Version needed
-            localView.setUint16(6, 0, true); // Flags
-            localView.setUint16(8, 0, true); // Compression (STORE)
-            localView.setUint16(10, 0, true); // Mod time
-            localView.setUint16(12, 0, true); // Mod date
-            localView.setUint32(14, crc32(data), true); // CRC32
-            localView.setUint32(18, data.length, true); // Compressed size
-            localView.setUint32(22, data.length, true); // Uncompressed size
-            localView.setUint16(26, nameBytes.length, true); // Name length
-            localView.setUint16(28, 0, true); // Extra length
+            localView.setUint32(0, 0x04034b50, true);
+            localView.setUint16(4, 20, true);
+            localView.setUint16(6, 0, true);
+            localView.setUint16(8, 0, true);
+            localView.setUint16(10, 0, true);
+            localView.setUint16(12, 0, true);
+            localView.setUint32(14, crc32(data), true);
+            localView.setUint32(18, data.length, true);
+            localView.setUint32(22, data.length, true);
+            localView.setUint16(26, nameBytes.length, true);
+            localView.setUint16(28, 0, true);
 
             localHeader.set(nameBytes, 30);
             localHeaders.push({ header: localHeader, data });
 
-            // Central directory header (46 bytes + nombre)
             const centralHeader = new Uint8Array(46 + nameBytes.length);
             const centralView = new DataView(centralHeader.buffer);
 
-            centralView.setUint32(0, 0x02014b50, true); // Signature
-            centralView.setUint16(4, 20, true); // Version made by
-            centralView.setUint16(6, 20, true); // Version needed
-            centralView.setUint16(8, 0, true); // Flags
-            centralView.setUint16(10, 0, true); // Compression
-            centralView.setUint16(12, 0, true); // Mod time
-            centralView.setUint16(14, 0, true); // Mod date
-            centralView.setUint32(16, crc32(data), true); // CRC32
-            centralView.setUint32(20, data.length, true); // Compressed size
-            centralView.setUint32(24, data.length, true); // Uncompressed size
-            centralView.setUint16(28, nameBytes.length, true); // Name length
-            centralView.setUint16(30, 0, true); // Extra length
-            centralView.setUint16(32, 0, true); // Comment length
-            centralView.setUint16(34, 0, true); // Disk number
-            centralView.setUint16(36, 0, true); // Internal attrs
-            centralView.setUint32(38, 0, true); // External attrs
-            centralView.setUint32(42, offset, true); // Offset
+            centralView.setUint32(0, 0x02014b50, true);
+            centralView.setUint16(4, 20, true);
+            centralView.setUint16(6, 20, true);
+            centralView.setUint16(8, 0, true);
+            centralView.setUint16(10, 0, true);
+            centralView.setUint16(12, 0, true);
+            centralView.setUint16(14, 0, true);
+            centralView.setUint32(16, crc32(data), true);
+            centralView.setUint32(20, data.length, true);
+            centralView.setUint32(24, data.length, true);
+            centralView.setUint16(28, nameBytes.length, true);
+            centralView.setUint16(30, 0, true);
+            centralView.setUint16(32, 0, true);
+            centralView.setUint16(34, 0, true);
+            centralView.setUint16(36, 0, true);
+            centralView.setUint32(38, 0, true);
+            centralView.setUint32(42, offset, true);
 
             centralHeader.set(nameBytes, 46);
             centralHeaders.push(centralHeader);
@@ -1812,29 +1848,25 @@
             offset += localHeader.length + data.length;
         });
 
-        // Calcular tamaños
         const centralDirSize = centralHeaders.reduce((sum, h) => sum + h.length, 0);
         const centralDirOffset = offset;
 
-        // End of central directory (22 bytes)
         const endRecord = new Uint8Array(22);
         const endView = new DataView(endRecord.buffer);
 
-        endView.setUint32(0, 0x06054b50, true); // Signature
-        endView.setUint16(4, 0, true); // Disk number
-        endView.setUint16(6, 0, true); // Central dir disk
-        endView.setUint16(8, files.length, true); // Entries on disk
-        endView.setUint16(10, files.length, true); // Total entries
-        endView.setUint32(12, centralDirSize, true); // Central dir size
-        endView.setUint32(16, centralDirOffset, true); // Central dir offset
-        endView.setUint16(20, 0, true); // Comment length
+        endView.setUint32(0, 0x06054b50, true);
+        endView.setUint16(4, 0, true);
+        endView.setUint16(6, 0, true);
+        endView.setUint16(8, files.length, true);
+        endView.setUint16(10, files.length, true);
+        endView.setUint32(12, centralDirSize, true);
+        endView.setUint32(16, centralDirOffset, true);
+        endView.setUint16(20, 0, true);
 
-        // Concatenar todo
         const totalSize = offset + centralDirSize + endRecord.length;
         const zipData = new Uint8Array(totalSize);
         let pos = 0;
 
-        // Local headers + datos
         localHeaders.forEach(({ header, data }) => {
             zipData.set(header, pos);
             pos += header.length;
@@ -1842,21 +1874,16 @@
             pos += data.length;
         });
 
-        // Central directory
         centralHeaders.forEach(header => {
             zipData.set(header, pos);
             pos += header.length;
         });
 
-        // End record
         zipData.set(endRecord, pos);
 
         return new Blob([zipData], { type: 'application/zip' });
     }
 
-    /**
-     * CRC32 para ZIP
-     */
     function crc32(data) {
         let crc = 0xFFFFFFFF;
         const table = getCRC32Table();
@@ -1868,7 +1895,6 @@
         return (crc ^ 0xFFFFFFFF) >>> 0;
     }
 
-    // Tabla CRC32 precalculada
     let crc32Table = null;
     function getCRC32Table() {
         if (crc32Table) return crc32Table;
@@ -1884,9 +1910,6 @@
         return crc32Table;
     }
 
-    /**
-     * Descarga un blob como archivo
-     */
     function downloadBlob(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1908,7 +1931,6 @@
 
         container.appendChild(alert);
 
-        // Auto-eliminar después de 5 segundos
         setTimeout(() => {
             alert.remove();
         }, 5000);
@@ -1917,7 +1939,6 @@
     // ========== ATAJOS DE TECLADO ==========
     function initKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            // Ctrl+Z / Cmd+Z = Undo
             if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
                 e.preventDefault();
                 if (state.activeImageId) {
@@ -1926,7 +1947,6 @@
                 }
             }
 
-            // Ctrl+Y / Cmd+Shift+Z = Redo
             if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
                 e.preventDefault();
                 if (state.activeImageId) {
